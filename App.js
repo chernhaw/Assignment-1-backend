@@ -20,7 +20,7 @@ var con = mysql.createConnection({
 
 app.post('/login', function(req, res){
    
-   console.log(req.body);
+   console.log("request" + req.body);
    const username = Object.values(req.body.username).toString().replaceAll(',','');
    const password = Object.values(req.body.password).toString().replaceAll(',','');
     console.log(username);
@@ -35,7 +35,83 @@ app.post('/login', function(req, res){
         res.send(rows);
     });
 
+    /*
+
+    con.connect(function(err) {
+  if (err) throw err;
+  console.log("Connected!");
+  con.query(sql, function (err, result) {
+    if (err) throw err;
+    console.log("Result: " + result);
+  });
 });
+    */
+
+});
+
+app.post('/newuser', function(req, res){
+    
+   
+    console.log("new user :"+req.body);
+    const username = Object.values(req.body.username).toString().replaceAll(',','');
+    const password = Object.values(req.body.password).toString().replaceAll(',','');
+    const email = Object.values(req.body.email).toString().replaceAll(',','');
+     console.log(username);
+     console.log(password);
+     console.log(email);
+
+     // check if username and/or email exist
+     const sqlName = "select username from "
+     + "nodelogin.accounts where username ='"+username+"'";
+ 
+     const sqlEmail = "select email from "
+      + "nodelogin.accounts where email ='"+email+"'";
+      var duplicate ="";
+ 
+     con.connect(function(err) {
+       //  if (err) throw err;
+         console.log("Connected!");
+         
+         con.query(sqlName, function (err, result) {
+           
+          // if (err) throw err;
+ 
+           try {
+             console.log("checkExisting -Result for username : " + result[0].username);
+             duplicate = duplicate + "name=true"
+             console.log("checkExisting - duplicate for username "+ duplicate);
+           } catch ( err){
+             console.log("checkExisting - err in checking username");
+             
+            
+           }
+         });
+ 
+         con.query(sqlEmail, function (err, result) {
+             
+          //   if (err) throw err;
+             try {
+                
+                 console.log("checkExisting -Result for email : " + result[0].email);
+                
+                 duplicate = duplicate + " email=true";
+                 console.log("checkExisting - duplicate for email "+ duplicate);
+                 
+               } catch ( err){
+                 console.log(err);
+                 console.log("checkExisting -err in checking email ");
+                 
+               }
+               console.log("checkExisting - username and email : "+ duplicate);
+              res.send(duplicate);
+               
+              
+           });
+           
+       });
+ });
+ 
+
 
 app.get('/', function(req, res){
 
@@ -65,3 +141,77 @@ app.get('/api',function(req, res){
 });
 
 app.listen(port);
+
+function checkExisting(username, email){
+    const sqlName = "select username from "
+    + "nodelogin.accounts where username ='"+username+"'";
+
+    const sqlEmail = "select email from "
+     + "nodelogin.accounts where email ='"+email+"'";
+     var duplicate ="";
+
+    con.connect(function(err) {
+      //  if (err) throw err;
+        console.log("Connected!");
+        
+        con.query(sqlName, function (err, result) {
+          
+         // if (err) throw err;
+
+          try {
+            console.log("checkExisting -Result for username : " + result[0].username);
+            duplicate = duplicate + "name=true"
+            console.log("checkExisting - duplicate for username "+ duplicate);
+          } catch ( err){
+            console.log("checkExisting - err in checking username");
+            
+           
+          }
+        });
+
+        con.query(sqlEmail, function (err, result) {
+            
+         //   if (err) throw err;
+            try {
+               
+                console.log("checkExisting -Result for email : " + result[0].email);
+               
+                duplicate = duplicate + " email=true";
+                console.log("checkExisting - duplicate for email "+ duplicate);
+                
+              } catch ( err){
+                console.log(err);
+                console.log("checkExisting -err in checking email ");
+                
+              }
+              console.log("checkExisting - username and email : "+ duplicate);
+             
+              
+             
+          });
+          
+      });
+      
+     
+}
+
+function checkEmail(email){
+
+    sqlEmail = "select email from "
+     + "nodelogin.accounts where email ='"+email+"'";
+
+
+     con.connect(function(err) {
+        if (err) throw err;
+        console.log("Connected!");
+        con.query(sqlEmail, function (err, result) {
+          if (err) throw err;
+          console.log("Result for email : " + result[0].email);
+          if( result[0].email!="" ){
+            return "email";
+          }
+        });
+      });
+     
+     
+}
