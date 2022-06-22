@@ -103,7 +103,30 @@ app.post('/newuser', function(req, res){
                  
                }
                console.log("checkExisting - username and email : "+ duplicate);
-              res.send(duplicate);
+             
+               if (duplicate.length==0){
+                // not duplicate insert data into nodelogin.accounts
+                console.log("checkExisting - inserting username, email and password into nodelogin.accounts");
+               
+                sqlInsert = "insert into nodelogin.accounts ( username, password, email) values ('"+username+"','"+password+"','"+email+"');";
+                console.log("checkExisting - "+sqlInsert);
+                try {
+                con.query(sqlInsert, function (err, result) {
+                 // if (err) throw err;
+                 });
+                } catch (err){
+                  console.log("checkExisting - Error in inserting  nodelogin.accounts")
+                  console.log(err);
+                }
+
+               }
+
+
+              
+               if (duplicate.length!=0){
+                res.send(duplicate);
+               }
+              
                
               
            });
