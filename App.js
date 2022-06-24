@@ -4,6 +4,7 @@ var cors = require('cors');
 var app = express();
 var mysql = require('mysql');
 
+
 var port = process.env.PORT || 8080;
 console.log (port);
 app.use(cors());
@@ -17,6 +18,44 @@ var con = mysql.createConnection({
     database:"nodelogin"
 });
 
+
+app.post('/updatepass', function(req, res){
+    
+  console.log("Update password request :"+req.body);
+  const username = Object.values(req.body.username).toString().replaceAll(',','');
+  const password = Object.values(req.body.username).toString().replaceAll(',','')
+  
+   console.log("user name "+ username);
+  // console.log("new password "+ email);
+  //Encrypt password
+
+  const encryPass = passwordEncrypt(password);
+   
+   // check if username and/or email exist
+   const sqlEmail = "update nodelogin.accounts set password = "+encryPass+" and  username ='"+username+"'";
+   
+   con.connect(function(err) {
+     //  if (err) throw err;
+       console.log("Connected!");
+       con.query(sqlEmail, function (err, result) {
+           
+        //   if (err) throw err;
+           try {
+              
+              
+                      
+              
+
+             } catch ( err){
+               console.log(err);
+              
+               
+             }
+              
+         });
+     }
+     );
+});
 
 app.post('/updateemail', function(req, res){
     
@@ -32,7 +71,7 @@ app.post('/updateemail', function(req, res){
     + "nodelogin.accounts where email ='"+email+"' and username not in '"+username+"'";
     var duplicate ="";
 
-    console.log("Check if email already used sql"+sqlEmail)
+    console.log("Check if email already used sql "+sqlEmail)
    
    con.connect(function(err) {
      //  if (err) throw err;
@@ -44,8 +83,8 @@ app.post('/updateemail', function(req, res){
               
                console.log("check if email already used -Result for email : " + result);
                 var resultStr =""+result+"";
-             // if (resultStr!="undefined"){
-              if (typeof(result)!="undefined"){
+              if (resultStr!="undefined"){
+             // if (typeof(result)!="undefined"){
                 duplicate = duplicate + " email=true";
                 console.log("duplicate email found, will not update email address, feedback to front end");
               // console.log("checkExistingEmail - duplicate for email "+ duplicate);
@@ -65,19 +104,10 @@ app.post('/updateemail', function(req, res){
                console.log("checkExistingEmail -err in checking email ");
                
              }
-             console.log("checkExistingEmail -  email : "+ duplicate);
-           
-            
-           
-            
+             console.log("checkExistingEmail -  email : "+ duplicate); 
          });
-         
      }
-     
      );
-
-    
-    
 });
 
 app.post('/profile', function(req, res){
@@ -316,6 +346,8 @@ function passwordEncrypt (myPlaintextPassword){
   console.log("passwordEncrypt - "+hash);
   return hash;
 }
+
+
 
 function checkEmail(email){
 
