@@ -1,6 +1,5 @@
 var express= require('express');
 var cors = require('cors');
-const { get } = require('express/lib/response');
 
 var app = express();
 var mysql = require('mysql');
@@ -18,40 +17,121 @@ var con = mysql.createConnection({
     database:"nodelogin"
 });
 
+
+app.post('/updateemail', function(req, res){
+    
+  console.log("Update email request :"+req.body);
+  const username = Object.values(req.body.username).toString().replaceAll(',','');
+  
+  const email = Object.values(req.body.email).toString().replaceAll(',','');
+   console.log("user name "+ username);
+   console.log("new email "+ email);
+
+   // check if username and/or email exist
+   const sqlEmail = "select email from "
+    + "nodelogin.accounts where email ='"+email+"' and username not in '"+username+"'";
+    var duplicate ="";
+
+    console.log("Check if email already used sql"+sqlEmail)
+   
+   con.connect(function(err) {
+     //  if (err) throw err;
+       console.log("Connected!");
+       con.query(sqlEmail, function (err, result) {
+           
+        //   if (err) throw err;
+           try {
+              
+               console.log("check if email already used -Result for email : " + result);
+                var resultStr =""+result+"";
+             // if (resultStr!="undefined"){
+              if (typeof(result)!="undefined"){
+                duplicate = duplicate + " email=true";
+                console.log("duplicate email found, will not update email address, feedback to front end");
+              // console.log("checkExistingEmail - duplicate for email "+ duplicate);
+                res.send(duplicate);
+              } else {
+                // procees to update
+                const sqlEmailUpdate = "update nodelogin.accounts set email = '"+email+"' where username  = '"+username+"'"
+                console.log("Update email sql : "+sqlEmailUpdate);
+                con.query(sqlEmailUpdate, function (err, result) {
+                console.log("Result of update "+result);        
+              });
+                      
+              }
+
+             } catch ( err){
+               console.log(err);
+               console.log("checkExistingEmail -err in checking email ");
+               
+             }
+             console.log("checkExistingEmail -  email : "+ duplicate);
+           
+            
+           
+            
+         });
+         
+     }
+     
+     );
+
+    
+    
+});
+
+app.post('/profile', function(req, res){
+   
+  console.log("request - extracting profile " + req.body);
+  const username = Object.values(req.body.username).toString().replaceAll(',','');
+  
+  // console.log(username);
+
+   const sql = "select email, password from "
+   + "nodelogin.accounts where username ='"+username+"'";
+   console.log(sql);
+   con.query(sql ,
+   function(err, rows){
+       if(err) throw err;
+       console.log(rows);
+       res.send(rows);
+   });
+
+});
+
 app.post('/login', function(req, res){
    
-   console.log("request" + req.body);
+   console.log("login request : " + req.body);
    const username = Object.values(req.body.username).toString().replaceAll(',','');
    const password = Object.values(req.body.password).toString().replaceAll(',','');
-    console.log(username);
-    console.log(password);
+    console.log("login request received: "+username);
+    console.log("login request received: " +password);
+
+    const bcrypt = require('bcrypt'); 
+   // const saltRounds = 10;
+   
     const sql = "select username, password from "
-    + "nodelogin.accounts where username ='"+username+"' and password ='"+password+"'";
+    + "nodelogin.accounts where username ='"+username+"'";
     console.log(sql);
     con.query(sql ,
     function(err, rows){
         if(err) throw err;
-        console.log(rows);
-        res.send(rows);
+        hash = ""+rows[0].password+"";
+        console.log("login - hash = "+hash);
+        console.log("login - password = "+password);
+        
+        bcrypt.compare(password, hash, (err, respass) => {
+          console.log("login - respass ="+respass); //true
+          res.send(respass)
+        });
+
+       // res.send();
     });
-
-    /*
-
-    con.connect(function(err) {
-  if (err) throw err;
-  console.log("Connected!");
-  con.query(sql, function (err, result) {
-    if (err) throw err;
-    console.log("Result: " + result);
-  });
-});
-    */
 
 });
 
 app.post('/newuser', function(req, res){
     
-   
     console.log("new user :"+req.body);
     const username = Object.values(req.body.username).toString().replaceAll(',','');
     const password = Object.values(req.body.password).toString().replaceAll(',','');
@@ -108,7 +188,9 @@ app.post('/newuser', function(req, res){
                 // not duplicate insert data into nodelogin.accounts
                 console.log("checkExisting - inserting username, email and password into nodelogin.accounts");
                
-                sqlInsert = "insert into nodelogin.accounts ( username, password, email) values ('"+username+"','"+password+"','"+email+"');";
+                const encryPass = passwordEncrypt(password);
+                
+                sqlInsert = "insert into nodelogin.accounts ( username, password, email) values ('"+username+"','"+encryPass+"','"+email+"');";
                 console.log("checkExisting - "+sqlInsert);
                 try {
                 con.query(sqlInsert, function (err, result) {
@@ -120,14 +202,9 @@ app.post('/newuser', function(req, res){
                 }
 
                }
-
-
-              
                if (duplicate.length!=0){
                 res.send(duplicate);
                }
-              
-               
               
            });
            
@@ -216,6 +293,28 @@ function checkExisting(username, email){
       });
       
      
+}
+
+// var CryptoJS = require("crypto-js");
+
+// var ciphertext = CryptoJS.AES.encrypt('test', 'secretkey34').toString();
+
+// console.log("ciphertext : "+ciphertext);
+
+// var bytes = CryptoJS.AES.decrypt(ciphertext, 'secretkey34' );
+
+// var originalText = bytes.toString(CryptoJS.enc.Utf8);
+
+// console.log(originalText);
+
+
+function passwordEncrypt (myPlaintextPassword){
+  const bcrypt = require('bcrypt');
+  const saltRounds = 10;
+
+  const hash = bcrypt.hashSync(myPlaintextPassword, saltRounds);
+  console.log("passwordEncrypt - "+hash);
+  return hash;
 }
 
 function checkEmail(email){
