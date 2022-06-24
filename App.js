@@ -38,18 +38,11 @@ app.post('/updatepass', function(req, res){
      //  if (err) throw err;
        console.log("Connected!");
        con.query(sqlEmail, function (err, result) {
-           
+           console.log(result);
         //   if (err) throw err;
            try {
-              
-              
-                      
-              
-
              } catch ( err){
                console.log(err);
-              
-               
              }
               
          });
@@ -129,6 +122,41 @@ app.post('/profile', function(req, res){
 
 });
 
+app.post('/email', function(req, res){
+   
+  console.log("request - extracting email " + req.body);
+  const username = Object.values(req.body.username).toString().replaceAll(',','');
+  
+   const sql = "select email from "
+   + "nodelogin.accounts where username ='"+username+"'";
+   console.log(sql);
+   con.query(sql ,
+   function(err, rows){
+       if(err) throw err;
+       console.log(rows[0].email);
+       res.send(rows[0]);
+   });
+
+});
+
+
+app.post('/admin', function(req, res){
+   
+  console.log("request - extracting admin " + req.body);
+  const username = Object.values(req.body.username).toString().replaceAll(',','');
+  
+   const sql = "select admin from "
+   + "nodelogin.accounts where username ='"+username+"'";
+   console.log(sql);
+   con.query(sql ,
+   function(err, rows){
+       if(err) throw err;
+       console.log(rows[0].admin);
+       res.send(rows[0]);
+   });
+
+});
+
 app.post('/login', function(req, res){
    
    console.log("login request : " + req.body);
@@ -140,7 +168,7 @@ app.post('/login', function(req, res){
     const bcrypt = require('bcrypt'); 
    // const saltRounds = 10;
    
-    const sql = "select username, password from "
+    const sql = "select username, password, email from "
     + "nodelogin.accounts where username ='"+username+"'";
     console.log(sql);
     con.query(sql ,
@@ -149,7 +177,7 @@ app.post('/login', function(req, res){
         hash = ""+rows[0].password+"";
         console.log("login - hash = "+hash);
         console.log("login - password = "+password);
-        
+       // console.log("login - email = "+email);
         bcrypt.compare(password, hash, (err, respass) => {
           console.log("login - respass ="+respass); //true
           res.send(respass)
