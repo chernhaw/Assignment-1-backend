@@ -23,23 +23,24 @@ app.post('/updatepass', function(req, res){
     
   console.log("Update password request :"+req.body);
   const username = Object.values(req.body.username).toString().replaceAll(',','');
-  const password = Object.values(req.body.username).toString().replaceAll(',','')
+  const password = Object.values(req.body.password).toString().replaceAll(',','')
   
    console.log("user name "+ username);
-  // console.log("new password "+ email);
+   console.log("new password "+ password);
   //Encrypt password
 
   const encryPass = passwordEncrypt(password);
    
    // check if username and/or email exist
-   const sqlEmail = "update nodelogin.accounts set password = "+encryPass+" and  username ='"+username+"'";
+   const sqlPass = "update nodelogin.accounts set password = '"+encryPass+"' where username ='"+username+"'";
    
    con.connect(function(err) {
      //  if (err) throw err;
-       console.log("Connected!");
-       con.query(sqlEmail, function (err, result) {
+       console.log("Update password Connected!");
+       console.log("Update password Run "+sqlPass)
+       con.query(sqlPass, function (err, result) {
            console.log(result);
-        //   if (err) throw err;
+           if (err) throw err;
            try {
              } catch ( err){
                console.log(err);
@@ -194,10 +195,16 @@ app.post('/newuser', function(req, res){
     const username = Object.values(req.body.username).toString().replaceAll(',','');
     const password = Object.values(req.body.password).toString().replaceAll(',','');
     const email = Object.values(req.body.email).toString().replaceAll(',','');
+    const admin = Object.values(req.body.admin).toString().replaceAll(',','');
      console.log(username);
      console.log(password);
      console.log(email);
+     console.log(admin);
 
+     var isAdmin ='N';
+     if (admin){
+        isAdmin='Y';
+     } 
      // check if username and/or email exist
      const sqlName = "select username from "
      + "nodelogin.accounts where username ='"+username+"'";
@@ -248,7 +255,7 @@ app.post('/newuser', function(req, res){
                
                 const encryPass = passwordEncrypt(password);
                 
-                sqlInsert = "insert into nodelogin.accounts ( username, password, email) values ('"+username+"','"+encryPass+"','"+email+"');";
+                sqlInsert = "insert into nodelogin.accounts ( username, password, email, admin, active) values ('"+username+"','"+encryPass+"','"+email+"','"+isAdmin+"','Y');";
                 console.log("checkExisting - "+sqlInsert);
                 try {
                 con.query(sqlInsert, function (err, result) {
