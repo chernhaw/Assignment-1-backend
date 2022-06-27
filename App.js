@@ -189,6 +189,42 @@ app.post('/login', function(req, res){
 
 });
 
+app.post('/updateadm', function(req, res){
+    console.log("updating user admin right :"+req.body);
+    const username = Object.values(req.body.username).toString().replaceAll(',','');
+    const admin = Object.values(req.body.admin).toString().replaceAll(',','');
+
+    console.log("username : "+username)
+    console.log("admin right")
+    var isAdmin ='N';
+     if (admin){
+        isAdmin='Y';
+     } else {
+        isAdmin='N'
+     }
+
+       // check if username and/or email exist
+   const sqlAdminUpdate = "update nodelogin.accounts set admin = '"+isAdmin+"' where username ='"+username+"'";
+   
+   con.connect(function(err) {
+     //  if (err) throw err;
+       console.log("Update user admin Connected!");
+       console.log("Update user admin "+sqlAdminUpdate)
+       con.query(sqlAdminUpdate, function (err, result) {
+           console.log(result);
+           if (err) throw err;
+           try {
+             } catch ( err){
+               console.log(err);
+             }
+              
+         });
+     }
+     );
+
+})
+
+
 app.post('/newuser', function(req, res){
     
     console.log("new user :"+req.body);
