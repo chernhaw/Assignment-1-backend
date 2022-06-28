@@ -162,6 +162,31 @@ app.post('/profile', function(req, res){
 
 });
 
+app.post('/groupassign', function (req, res){
+  console.log("request - assign group " + req.body);
+  const groupname = Object.values(req.body.groupname).toString().replaceAll(',','');
+  const username = Object.values(req.body.username).toString().replaceAll(',','');
+  const role = "member";
+        const id = parseInt(Math.random()*1000)
+        
+        const sqlAssignGroup = "insert into nodelogin.group_assign ( assign_id, username, groupname, group_role ) values ('"+id+"','"+username+"','"+groupname+"','"+role+"');";
+       console.log("Inserting into "+sqlAssignGroup);
+        try {
+        con.query(sqlInsertGroup, function (err, result) {
+         if (err) throw err;
+         });
+        } catch (err){
+          console.log("checkExisting - Error in inserting group_assign")
+          console.log(err);
+        }
+
+      }
+
+
+
+
+)
+
 app.post('/creategroup', function (req, res){
   console.log("request - create new group " + req.body);
   const groupname = Object.values(req.body.groupname).toString().replaceAll(',','');
