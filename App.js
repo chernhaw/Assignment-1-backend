@@ -18,6 +18,45 @@ var con = mysql.createConnection({
     database:"nodelogin"
 });
 
+app.post('/activate', function(req, res){
+    
+  console.log("Activate or unactivate user :"+req.body);
+  const activate = Object.values(req.body.active).toString().replaceAll(',','');
+  const username = Object.values(req.body.username).toString().replaceAll(',','')
+  
+   console.log("user name "+ username+ " update "+activate);
+   var strActivate ='N'
+   if (activate=="true"){
+    strActivate='Y'
+   } else {
+    strActivate='N'
+   }
+
+  //Encrypt password
+
+ // const encryPass = passwordEncrypt(password);
+
+  
+   
+   // check if username and/or email exist
+   const sqlActivate = "update nodelogin.accounts set active = '"+strActivate+"' where username ='"+username+"'";
+   
+   con.connect(function(err) {
+     //  if (err) throw err;
+      
+       console.log("Update user activate Run "+sqlActivate);
+       con.query(sqlActivate, function (err, result) {
+           console.log(result);
+           if (err) throw err;
+           try {
+             } catch ( err){
+               console.log(err);
+             }
+              
+         });
+     }
+     );
+});
 
 app.post('/updatepass', function(req, res){
     
@@ -194,15 +233,15 @@ app.post('/updateadm', function(req, res){
     const username = Object.values(req.body.username).toString().replaceAll(',','');
     const admin = Object.values(req.body.admin).toString().replaceAll(',','');
 
-    console.log("username : "+username)
-    console.log("admin right")
+    console.log("username : "+username+ ", admin :"+admin)
+   
     var isAdmin ='N';
-     if (admin){
+     if (admin=="true"){
         isAdmin='Y';
      } else {
         isAdmin='N'
      }
-
+     console.log("updating admin right of username : "+username+" to "+isAdmin)
        // check if username and/or email exist
    const sqlAdminUpdate = "update nodelogin.accounts set admin = '"+isAdmin+"' where username ='"+username+"'";
    
