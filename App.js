@@ -162,6 +162,51 @@ app.post('/profile', function(req, res){
 
 });
 
+app.post('/creategroup', function (req, res){
+  console.log("request - create new group " + req.body);
+  const groupname = Object.values(req.body.groupname).toString().replaceAll(',','');
+
+  const sqlGroup = "select count(*) as groupcount from nodelogin.group where groupname='"+groupname+"'";
+  
+ 
+  console.log(sqlGroup);
+  con.query(sqlGroup ,
+  function(err, rows){
+      if(err) throw err;
+
+     // var resultStr = rows."count(*)";
+      console.log( "Duplicate found for "+groupname+" : " +rows[0].groupcount);
+      
+      var dupliacte = ""+rows[0].groupcount
+      console.log(dupliacte);
+      var duplicate = parseInt(dupliacte);
+    //  var dupliacte = ""+
+     
+     
+      if (duplicate!=0){
+        console.log("send response back ");
+       
+      } else {
+
+        const id = parseInt(Math.random()*1000)
+        
+        const sqlInsertGroup = "insert into nodelogin.group ( id ,groupname ) values ('"+id+"','"+groupname+"');";
+       console.log("Inserting into "+sqlInsertGroup);
+        try {
+        con.query(sqlInsertGroup, function (err, result) {
+         if (err) throw err;
+         });
+        } catch (err){
+          console.log("checkExisting - Error in inserting  nodelogin.accounts")
+          console.log(err);
+        }
+
+      }
+  })
+
+  res.send(duplicate)
+
+})
 app.post('/email', function(req, res){
    
   console.log("request - extracting email " + req.body);
@@ -302,8 +347,6 @@ app.post('/newuser', function(req, res){
              console.log("checkExisting - duplicate for username "+ duplicate);
            } catch ( err){
              console.log("checkExisting - err in checking username");
-             
-            
            }
          });
  
