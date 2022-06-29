@@ -172,9 +172,11 @@ app.post('/groupassign', function (req, res){
         const sqlAssignGroup = "insert into nodelogin.group_assign ( assign_id, username, groupname, group_role ) values ('"+id+"','"+username+"','"+groupname+"','"+role+"');";
        console.log("Inserting into "+sqlAssignGroup);
         try {
-        con.query(sqlInsertGroup, function (err, result) {
+        con.query(sqlAssignGroup, function (err, result) {
          if (err) throw err;
+         return result;
          });
+        
         } catch (err){
           console.log("checkExisting - Error in inserting group_assign")
           console.log(err);
@@ -278,19 +280,25 @@ app.post('/login', function(req, res){
     const bcrypt = require('bcrypt'); 
    // const saltRounds = 10;
    
-    const sql = "select username, password, email from "
+    const sql = "select username, password, email, active from "
     + "nodelogin.accounts where username ='"+username+"'";
     console.log(sql);
     con.query(sql ,
     function(err, rows){
         if(err) throw err;
+        var active = rows[0].active;
+
         hash = ""+rows[0].password+"";
         console.log("login - hash = "+hash);
         console.log("login - password = "+password);
+        console.log("User is active "+ active);
        // console.log("login - email = "+email);
         bcrypt.compare(password, hash, (err, respass) => {
-          console.log("login - respass ="+respass); //true
-          res.send(respass)
+          console.log("login - respass = "+respass + " active= "+active); //true
+         // res.json({firstname:'John', lastname:'Doe'});
+         res.json({repass:""+respass + "", active:""+active+""});
+
+      //    res.send()
         });
 
        // res.send();
