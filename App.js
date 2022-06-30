@@ -183,11 +183,47 @@ app.post('/groupassign', function (req, res){
         }
 
       }
-
-
-
-
 )
+
+
+
+app.post('/checkgroup', function (req, res){
+  console.log("request - checking group "+ req.body);
+  const groupname = Object.values(req.body.groupname).toString().replaceAll(',','');
+  const sqlGroup  = "select username from nodelogin.group_assign where groupname='"+groupname+"'";
+  console.log("checkusergroup - check "+groupname);
+ 
+  // check user's group
+  console.log(sqlGroup);
+  con.query(sqlGroup ,
+  function(err, rows){
+      if(err) throw err;
+      console.log(rows);
+ 
+      res.send(rows);
+  });
+ 
+ 
+ })
+
+app.post('/checkusergroup', function (req, res){
+ console.log("request - checking user group "+ req.body);
+ const username = Object.values(req.body.username).toString().replaceAll(',','');
+ const sqlUserGroup  = "select group, username from nodelogin.group where name='"+username+"'";
+ console.log("checkusergroup - check "+sqlUserGroup);
+
+ // check user's group
+ console.log(sqlUserGroup);
+ con.query(sqlUserGroup ,
+ function(err, rows){
+     if(err) throw err;
+     console.log(rows);
+
+     res.send(rows);
+ });
+
+
+})
 
 app.post('/creategroup', function (req, res){
   console.log("request - create new group " + req.body);
@@ -234,6 +270,44 @@ app.post('/creategroup', function (req, res){
   res.send(duplicate)
 
 })
+
+app.post('/byemail', function(req, res){
+   
+  console.log("request - extracting username, active, admin, email " + req.body);
+  const email = Object.values(req.body.email).toString().replaceAll(',','');
+  
+   const sql = "select username, email, active, admin from "
+   + "nodelogin.accounts where email ='"+email+"'";
+   console.log(sql);
+   con.query(sql ,
+   function(err, rows){
+       if(err) throw err;
+       console.log(rows[0]);
+       res.send(rows[0]);
+   });
+
+});
+
+
+
+app.post('/byusername', function(req, res){
+   
+  console.log("request - extracting username, active, admin, email " + req.body);
+  const username = Object.values(req.body.username).toString().replaceAll(',','');
+  
+   const sql = "select username, email, active, admin from "
+   + "nodelogin.accounts where username ='"+username+"'";
+   console.log(sql);
+   con.query(sql ,
+   function(err, rows){
+       if(err) throw err;
+       console.log(rows[0]);
+       res.send(rows[0]);
+   });
+
+});
+
+
 app.post('/email', function(req, res){
    
   console.log("request - extracting email " + req.body);
