@@ -25,21 +25,9 @@ app.post('/activate', function(req, res){
   const username = Object.values(req.body.username).toString().replaceAll(',','')
   
    console.log("user name "+ username+ " update "+activate);
-   var strActivate ='N'
-   if (activate=="true"){
-    strActivate='Y'
-   } else {
-    strActivate='N'
-   }
-
-  //Encrypt password
-
- // const encryPass = passwordEncrypt(password);
-
-  
    
    // check if username and/or email exist
-   const sqlActivate = "update nodelogin.accounts set active = '"+strActivate+"' where username ='"+username+"'";
+   const sqlActivate = "update nodelogin.accounts set active = '"+activate+"' where username ='"+username+"'";
    
    con.connect(function(err) {
      //  if (err) throw err;
@@ -357,26 +345,39 @@ app.post('/login', function(req, res){
     const sql = "select username, password, email, active from "
     + "nodelogin.accounts where username ='"+username+"'";
     console.log(sql);
+
+   
     con.query(sql ,
     function(err, rows){
-        if(err) throw err;
-        var active = rows[0].active;
+     
+        console.log("User returned "+rows.length)
 
+        if (rows.length==0){
+          res.json({msg:"no user found"})
+        } else {
+        var active = rows[0].active;
         hash = ""+rows[0].password+"";
         console.log("login - hash = "+hash);
         console.log("login - password = "+password);
         console.log("User is active "+ active);
+      
+       // res.json({msg:"no user found"})
+      
        // console.log("login - email = "+email);
         bcrypt.compare(password, hash, (err, respass) => {
+         
           console.log("login - respass = "+respass + " active= "+active); //true
          // res.json({firstname:'John', lastname:'Doe'});
          res.json({repass:""+respass + "", active:""+active+""});
-
+        
       //    res.send()
         });
+      }
+    
 
        // res.send();
     });
+  
 
 });
 
@@ -387,15 +388,10 @@ app.post('/updateadm', function(req, res){
 
     console.log("username : "+username+ ", admin :"+admin)
    
-    var isAdmin ='N';
-     if (admin=="true"){
-        isAdmin='Y';
-     } else {
-        isAdmin='N'
-     }
-     console.log("updating admin right of username : "+username+" to "+isAdmin)
+    
+     console.log("updating admin right of username : "+username+" to "+admin)
        // check if username and/or email exist
-   const sqlAdminUpdate = "update nodelogin.accounts set admin = '"+isAdmin+"' where username ='"+username+"'";
+   const sqlAdminUpdate = "update nodelogin.accounts set admin = '"+admin+"' where username ='"+username+"'";
    
    con.connect(function(err) {
      //  if (err) throw err;
