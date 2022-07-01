@@ -154,22 +154,53 @@ app.post('/groupassign', function (req, res){
   console.log("request - assign group " + req.body);
   const groupname = Object.values(req.body.groupname).toString().replaceAll(',','');
   const username = Object.values(req.body.username).toString().replaceAll(',','');
-  const role = "member";
-        const id = parseInt(Math.random()*1000)
-        
-        const sqlAssignGroup = "insert into nodelogin.group_assign ( assign_id, username, groupname, group_role ) values ('"+id+"','"+username+"','"+groupname+"','"+role+"');";
-       console.log("Inserting into "+sqlAssignGroup);
-        try {
-        con.query(sqlAssignGroup, function (err, result) {
-         if (err) throw err;
-         return result;
-         });
-        
-        } catch (err){
-          console.log("checkExisting - Error in inserting group_assign")
-          console.log(err);
-        }
+      
+  // check duplicates
 
+  const sqlCheckDuplicateUser = "select count(*) as groupcount from nodelogin.group_assign "+
+  "where groupname='"+groupname+"' and username='"+username+"'";
+  
+  var duplicateMember = false;
+  try {
+    con.query(sqlCheckDuplicateUser, function (err, result) {
+     if (err) throw err;
+     const noOfDuplicates = result[0].groupcount;
+
+     if (noOfDuplicates!=0){
+      console.log("Duplicate found "+ noOfDuplicates)
+      res.send(result);
+      duplicateMember = true;
+     }
+     });
+
+     if (!duplicateMember){
+
+      const role = "member";
+      const id = parseInt(Math.random()*1000000)
+      
+      const sqlAssignGroup = "insert into nodelogin.group_assign ( assign_id, username, groupname, group_role ) values ('"+id+"','"+username+"','"+groupname+"','"+role+"');";
+     console.log("Inserting into "+sqlAssignGroup);
+      try {
+      con.query(sqlAssignGroup, function (err, result) {
+       if (err) throw err;
+       return result;
+       });
+      
+      } catch (err){
+        console.log("checkExisting - Error in inserting group_assign")
+        console.log(err);
+      }
+
+     }
+    
+    } catch (err){
+      console.log("assign user to group - Error querying group_assign")
+      console.log(err);
+    }
+
+
+
+       
       }
 )
 
