@@ -88,9 +88,9 @@ app.post('/updateemail', function(req, res){
    console.log("new email "+ email);
 
    // check if username and/or email exist
-   const sqlEmail = "select email from "
-    + "nodelogin.accounts where email ='"+email+"' and username not in '"+username+"'";
-    var duplicate ="";
+   const sqlEmail = "select count(*) as duplicateemail from "
+    + "nodelogin.accounts where email ='"+email+"' and username not in ('"+username+"')";
+   
 
     console.log("Check if email already used sql "+sqlEmail)
    
@@ -101,15 +101,16 @@ app.post('/updateemail', function(req, res){
            
         //   if (err) throw err;
            try {
-              
-               console.log("check if email already used -Result for email : " + result);
-                var resultStr =""+result+"";
-              if (resultStr!="undefined"){
+              //result[0].duplicate_member
+               console.log("check if email already used -Result for email : " + result[0].count);
+               
+               console.log("Duplicate count found "+result[0].duplicateemail)
+              if (result[0].duplicateemail!=0){
              // if (typeof(result)!="undefined"){
-                duplicate = duplicate + " email=true";
+               
                 console.log("duplicate email found, will not update email address, feedback to front end");
               // console.log("checkExistingEmail - duplicate for email "+ duplicate);
-                res.send(duplicate);
+                res.send(result);
               } else {
                 // procees to update
                 const sqlEmailUpdate = "update nodelogin.accounts set email = '"+email+"' where username  = '"+username+"'"
@@ -157,24 +158,22 @@ app.post('/groupassign', function (req, res){
       
   // check duplicates
 
-  const sqlCheckDuplicateUser = "select count(*) as groupcount from nodelogin.group_assign "+
+  const sqlCheckDuplicateUser = "select count(*) as duplicate_member from nodelogin.group_assign "+
   "where groupname='"+groupname+"' and username='"+username+"'";
   
-  var duplicateMember = false;
+  var duplicateMember = true;
   try {
     con.query(sqlCheckDuplicateUser, function (err, result) {
      if (err) throw err;
-     const noOfDuplicates = result[0].groupcount;
+     var duplicateUser = result[0].duplicate_member;
 
-     if (noOfDuplicates!=0){
-      console.log("Duplicate found "+ noOfDuplicates)
+     if (duplicateUser!=0){
+      console.log("Duplicate username "+username+ " found in "+groupname +" : "+ duplicateUser)
+     
+     
+      console.log("duplicate member "+ duplicateMember)
       res.send(result);
-      duplicateMember = true;
-     }
-     });
-
-     if (!duplicateMember){
-
+     } else {
       const role = "member";
       const id = parseInt(Math.random()*1000000)
       
@@ -191,17 +190,20 @@ app.post('/groupassign', function (req, res){
         console.log(err);
       }
 
+     
      }
+
+     });
+
     
     } catch (err){
       console.log("assign user to group - Error querying group_assign")
       console.log(err);
-    }
+    } 
+    
 
-
-
-       
-      }
+    
+  }
 )
 
 
@@ -250,7 +252,7 @@ app.post('/creategroup', function (req, res){
 
   const sqlGroup = "select count(*) as groupcount from nodelogin.group where groupname='"+groupname+"'";
   
- 
+  var msg='';
   console.log(sqlGroup);
   con.query(sqlGroup ,
   function(err, rows){
@@ -259,18 +261,16 @@ app.post('/creategroup', function (req, res){
      // var resultStr = rows."count(*)";
       console.log( "Duplicate found for "+groupname+" : " +rows[0].groupcount);
       
-      var dupliacte = ""+rows[0].groupcount
-      console.log(dupliacte);
-      var duplicate = parseInt(dupliacte);
-    //  var dupliacte = ""+
-     
-     
+      var duplicate = rows[0].groupcount
+      console.log("Duplicate group found for "+groupname+" :"+duplicate);
+     // var duplicate = parseInt(duplicate);
+
       if (duplicate!=0){
-        console.log("send response back ");
-       
+       console.log("Duplicate found will not create group")
+        
       } else {
 
-        const id = parseInt(Math.random()*1000)
+        const id = parseInt(Math.random()*100000)
         
         const sqlInsertGroup = "insert into nodelogin.group ( id ,groupname ) values ('"+id+"','"+groupname+"');";
        console.log("Inserting into "+sqlInsertGroup);
@@ -284,9 +284,11 @@ app.post('/creategroup', function (req, res){
         }
 
       }
+      res.send(rows[0]);
   })
 
-  res.send(duplicate)
+ 
+ // res.json({msg:""+msg+""})
 
 })
 
@@ -514,7 +516,7 @@ app.post('/newuser', function(req, res){
                  // if (err) throw err;
                  });
                 } catch (err){
-                  console.log("checkExisting - Error in inserting  nodelogin.accounts")
+                  console.log("checkExisting - Error in inserting nodelogin.accounts")
                   console.log(err);
                 }
 
