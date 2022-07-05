@@ -100,10 +100,7 @@ app.post('/updateemail', function(req, res){
        con.query(sqlEmail, function (err, result) {
            
         //   if (err) throw err;
-           try {
-              //result[0].duplicate_member
-               console.log("check if email already used -Result for email : " + result[0].count);
-               
+           try { 
                console.log("Duplicate count found "+result[0].duplicateemail)
               if (result[0].duplicateemail!=0){
              // if (typeof(result)!="undefined"){
@@ -116,8 +113,8 @@ app.post('/updateemail', function(req, res){
                 const sqlEmailUpdate = "update nodelogin.accounts set email = '"+email+"' where username  = '"+username+"'"
                 console.log("Update email sql : "+sqlEmailUpdate);
                 con.query(sqlEmailUpdate, function (err, result) {
-                console.log("Result of update "+result);        
-              });
+             //   console.log("Result of update "+result);        
+                 });
                       
               }
 
@@ -126,7 +123,7 @@ app.post('/updateemail', function(req, res){
                console.log("checkExistingEmail -err in checking email ");
                
              }
-             console.log("checkExistingEmail -  email : "+ duplicate); 
+            
          });
      }
      );
@@ -530,6 +527,34 @@ app.post('/newuser', function(req, res){
        });
  });
  
+
+
+ app.post('/groupremove', function(req, res){
+  console.log("removing user from group :"+req.body);
+  const username = Object.values(req.body.username).toString().replaceAll(',','');
+  const groupname = Object.values(req.body.groupname).toString().replaceAll(',','');
+
+   console.log("removing "+username+" from "+groupname)
+     // check if username and/or email exist
+ const sqlRemoveAssignment = "delete from nodelogin.group_assign where username ='"+username+"' and groupname ='"+groupname+"'";
+ 
+ con.connect(function(err) {
+   //  if (err) throw err;
+    
+     console.log("Update user admin "+sqlRemoveAssignment)
+     con.query(sqlRemoveAssignment, function (err, result) {
+         console.log(result);
+         if (err) throw err;
+         try {
+           } catch ( err){
+             console.log(err);
+           }
+            
+       });
+   }
+   );
+
+})
 
 
 app.get('/', function(req, res){
