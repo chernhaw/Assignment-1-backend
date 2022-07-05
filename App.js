@@ -4,7 +4,7 @@ var cors = require('cors');
 var app = express();
 var mysql = require('mysql');
 
-
+// TODO : split into route and put env into a file import env file
 var port = process.env.PORT || 8080;
 console.log (port);
 app.use(cors());
@@ -243,6 +243,53 @@ app.post('/checkusergroup', function (req, res){
 
 })
 
+
+app.post('/groupexist', function (req, res){
+  console.log("request - check if group exist " + req.body);
+  const groupname = Object.values(req.body.groupname).toString().replaceAll(',','');
+
+  const sqlGroup = "select count(*) as groupcount from nodelogin.group where groupname='"+groupname+"'";
+  
+  var msg='';
+  console.log(sqlGroup);
+  con.query(sqlGroup ,
+  function(err, rows){
+      if(err) throw err;
+
+     // var resultStr = rows."count(*)";
+      console.log( "Duplicate found for "+groupname+" : " +rows[0].groupcount);
+      
+      var duplicate = rows[0].groupcount
+      console.log("Duplicate group found for "+groupname+" :"+duplicate);
+     // var duplicate = parseInt(duplicate);
+
+      if (duplicate!=0){
+       console.log("Duplicate found will not create group")
+        
+      } else {
+
+      //   const id = parseInt(Math.random()*100000)
+        
+      //   const sqlInsertGroup = "insert into nodelogin.group ( id ,groupname ) values ('"+id+"','"+groupname+"');";
+      //  console.log("Inserting into "+sqlInsertGroup);
+      //   try {
+      //   con.query(sqlInsertGroup, function (err, result) {
+      //    if (err) throw err;
+      //    });
+      //   } catch (err){
+      //     console.log("checkExisting - Error in inserting  nodelogin.accounts")
+      //     console.log(err);
+      //   }
+
+      }
+      res.send(rows[0]);
+  })
+
+ 
+ // res.json({msg:""+msg+""})
+
+})
+
 app.post('/creategroup', function (req, res){
   console.log("request - create new group " + req.body);
   const groupname = Object.values(req.body.groupname).toString().replaceAll(',','');
@@ -360,6 +407,21 @@ app.post('/admin', function(req, res){
    });
 
 });
+
+app.post('/userexist', function(req, res){
+   const username = Object.values(req.body.username).toString().replaceAll(',','');
+   const sql = "select count(*) as usercount from "
+   + "nodelogin.accounts where username ='"+username+"'";
+   console.log("check user exist "+sql);
+   con.query(sql ,
+   function(err, rows){
+       if(err) throw err;
+       console.log(rows[0].usercount);
+       res.send(rows[0]);
+   });
+
+})
+
 
 app.post('/login', function(req, res){
    
