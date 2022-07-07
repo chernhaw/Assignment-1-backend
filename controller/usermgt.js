@@ -339,13 +339,29 @@ const checkgroup = (req, res)=>{
 //app.post('/checkusergroup', function (req, res)
 const checkusergroup = (req, res)=>{
  console.log("request - checking user group "+ req.body);
+ const groupname = Object.values(req.body.groupname).toString().replaceAll(',','');
  const username = Object.values(req.body.username).toString().replaceAll(',','');
- const sqlUserGroup  = "select group, username from nodelogin.group where name='"+username+"'";
- console.log("checkusergroup - check "+sqlUserGroup);
+ const sqlUserGroupRole  = "select group_role from nodelogin.group_assign where username='"+username+"' and groupname='"+groupname+"'";
+ console.log("checkusergroup - check "+sqlUserGroupRole);
 
  // check user's group
- console.log(sqlUserGroup);
- con.query(sqlUserGroup ,
+ console.log("check user group : "+sqlUserGroupRole);
+ con.query(sqlUserGroupRole ,
+ function(err, rows){
+     if(err) throw err;
+     console.log(rows);
+     res.send(rows);
+ });
+};
+
+const groupadmin = (req, res)=>{
+  console.log("request - create new group " + req.body);
+  const username = Object.values(req.body.username).toString().replaceAll(',','');
+  const groupadmin = Object.values(req.body.groupadmin).toString().replaceAll(',','');
+
+  const sqlGpAdmin = "update group_assign set groupadmin = '"+groupadmin+"' where username ='"+username+"'";
+  console.log(sqlGpAdmin);
+ con.query(sqlGpAdmin ,
  function(err, rows){
      if(err) throw err;
      console.log(rows);
@@ -665,4 +681,5 @@ const groupassign = (req, res) => {
     groupexist,
     groupassign,
     userexist,
-    groupremove}
+    groupremove,
+    groupadmin}
