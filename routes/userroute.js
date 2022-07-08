@@ -19,4 +19,8 @@ userroute.post('/creategroup', usermgt.creategroup)
 userroute.post('/groupassign', usermgt.groupassign)
 userroute.post('/userexist', usermgt.userexist)
 userroute.post('/groupremove', usermgt.groupremove)
+
+userroute.post('/grouprole', usermgt.checkusergroup)
+userroute.post('/groupadminassign', usermgt.groupadminassign)
+userroute.post('/groupadminremove', usermgt.groupadminremove)
 module.exports = userroute;
