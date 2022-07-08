@@ -10,12 +10,31 @@
 // app.use(express.json());
  var mysql = require('mysql');
 
-var con = mysql.createConnection({
-  host:"localhost",
+
+const env = require('dotenv')
+ env.config({path:'./config.env'})
+// env.ok(function(err) {
+//   if (!err) return
+//   console.error(err)
+//   process.exit(1)
+// })
+
+// function handleEnv (err) {
+//   if (!err) return
+//   process.exit(1)
+// }
+
+
+ var con = mysql.createConnection({
+ // host:process.env.HOST,
+ //user:process.env.USER,
   user:"root",
   password:"password",
+ //password:process.env.PASSWORD,
+
   database:"nodelogin"
-});
+// database:process.env.DATABASE
+ } );
 
 
 // app.post('/email', function(req, res){
@@ -151,7 +170,9 @@ const login = (req, res)=>{
    + "nodelogin.accounts where username ='"+username+"'";
    console.log(sql);
 
+  console.log ( "user:"+process.env.USER+
   
+"/password:" +process.env.PASSWORD)
    con.query(sql ,
    function(err, rows){
     
@@ -229,6 +250,53 @@ const activate = (req, res)=>{
      });
   
   }
+
+  
+  //  const sqlListGroup = "select groupname from group where groupname like '%"+groupname+"%'";
+  const listusers =(req, res)=>{
+  
+     console.log("request - extracting user list " + req.body);
+     try {
+      
+       listuserssql = "select username as value, username as label from nodelogin.accounts"
+      
+       console.log("Get list of groups query" +listuserssql);
+      con.query(listuserssql,
+      function(err, rows){
+          if(err) throw err;
+          console.log(rows);
+          res.send(rows);
+      });
+     } catch (err){
+      console.log(err);
+     }
+   }
+
+
+  const listgroup =(req, res)=>{
+   var groupname =''
+   var listgroupsql =''
+    console.log("request - extracting grouplist " + req.body);
+    try {
+      groupname = Object.values(req.body.groupname).toString().replaceAll(',','');
+      listgroupsql = "select groupname as value, groupname as label from nodelogin.group where groupname like '%"+groupname+"%'"
+     
+    } catch (err){
+      listgroupsql = "select groupname as value, groupname as label from nodelogin.group"
+    }
+     
+     console.log("Get list of groups query" +listgroupsql);
+     con.query(listgroupsql ,
+     function(err, rows){
+         if(err) throw err;
+         console.log(rows);
+         res.send(rows);
+     });
+  
+  }
+
+  
+      
   
   const newuser =(req, res)=>{
     
@@ -271,15 +339,20 @@ const activate = (req, res)=>{
            }
          });
  
+       
          con.query(sqlEmail, function (err, result) {
              
           //   if (err) throw err;
              try {
                 
                  console.log("checkExisting -Result for email : " + result[0].email);
-                
+                 if (email.length!=0){
                  duplicate = duplicate + " email=true";
+                 
                  console.log("checkExisting - duplicate for email "+ duplicate);
+                } else {
+                  console.log("Email not provided")
+                }
                  
                } catch ( err){
                  console.log(err);
@@ -310,38 +383,50 @@ const activate = (req, res)=>{
                 res.send(duplicate);
                }
               
-           });
+           }
+           
+           );
            
        });
  };
 
  
-//app.post('/checkgroup', function (req, res){
-const checkgroup = (req, res)=>{
-  console.log("request - checking group "+ req.body);
-  const groupname = Object.values(req.body.groupname).toString().replaceAll(',','');
-  const sqlGroup  = "select username from nodelogin.group_assign where groupname='"+groupname+"'";
-  console.log("checkusergroup - check "+groupname);
+// //app.post('/checkgroup', function (req, res){
+// const checkgroup = (req, res)=>{
+//   console.log("request - checking group "+ req.body);
+//   const groupname = Object.values(req.body.groupname).toString().replaceAll(',','');
+//   const sqlGroup  = "select username from nodelogin.group_assign where groupname='"+groupname+"'";
+//   console.log("checkusergroup - check "+groupname);
  
-  // check user's group
-  console.log(sqlGroup);
-  con.query(sqlGroup ,
-  function(err, rows){
-      if(err) throw err;
-      console.log(rows);
+//   // check user's group
+//   console.log(sqlGroup);
+//   con.query(sqlGroup ,
+//   function(err, rows){
+//       if(err) throw err;
+//       console.log(rows);
  
-      res.send(rows);
-  });
+//       res.send(rows);
+//   });
  
  
- };
+//  };
 
 //app.post('/checkusergroup', function (req, res)
-const checkusergroup = (req, res)=>{
+const checkgroup = (req, res)=>{
  console.log("request - checking user group "+ req.body);
- const groupname = Object.values(req.body.groupname).toString().replaceAll(',','');
+ var groupname;
+ try {
+  groupname = Object.values(req.body.groupname).toString().replaceAll(',','');
+ } catch (err){
+  groupname="";
+ }
  const username = Object.values(req.body.username).toString().replaceAll(',','');
- const sqlUserGroupRole  = "select group_role from nodelogin.group_assign where username='"+username+"' and groupname='"+groupname+"'";
+ var sqlUserGroupRole 
+ if (groupname.length==0){
+    sqlUserGroupRole  = "select count(*) as admin from nodelogin.group_assign where username='"+username+"' and admin=true";
+ } else {
+  sqlUserGroupRole  = "select count(*) as admin from nodelogin.group_assign where username='"+username+"' and groupname='"+groupname+"' and admin=true";
+ }
  console.log("checkusergroup - check "+sqlUserGroupRole);
 
  // check user's group
@@ -349,25 +434,25 @@ const checkusergroup = (req, res)=>{
  con.query(sqlUserGroupRole ,
  function(err, rows){
      if(err) throw err;
-     console.log(rows);
+     console.log("Admin count " +rows[0].admin);
      res.send(rows);
  });
 };
 
-const groupadmin = (req, res)=>{
-  console.log("request - create new group " + req.body);
-  const username = Object.values(req.body.username).toString().replaceAll(',','');
-  const groupadmin = Object.values(req.body.groupadmin).toString().replaceAll(',','');
+// const groupadmin = (req, res)=>{
+//   console.log("request - create new group " + req.body);
+//   const username = Object.values(req.body.username).toString().replaceAll(',','');
+//   const groupadmin = Object.values(req.body.groupadmin).toString().replaceAll(',','');
 
-  const sqlGpAdmin = "update group_assign set groupadmin = '"+groupadmin+"' where username ='"+username+"'";
-  console.log(sqlGpAdmin);
- con.query(sqlGpAdmin ,
- function(err, rows){
-     if(err) throw err;
-     console.log(rows);
-     res.send(rows);
- });
-};
+//   const sqlGpAdmin = "update group_assign set groupadmin = '"+groupadmin+"' where username ='"+username+"'";
+//   console.log(sqlGpAdmin);
+//  con.query(sqlGpAdmin ,
+//  function(err, rows){
+//      if(err) throw err;
+//      console.log(rows);
+//      res.send(rows);
+//  });
+// };
 
 //const creategroup = 
 //app.post('/creategroup', function (req, res){
@@ -568,7 +653,7 @@ const groupassign = (req, res) => {
   console.log("request - assign group " + req.body);
   const groupname = Object.values(req.body.groupname).toString().replaceAll(',','');
   const username = Object.values(req.body.username).toString().replaceAll(',','');
-      
+//  const role = Object.values(req.body.role).toString().replaceAll(',','');
   // check duplicates
 
   const sqlCheckDuplicateUser = "select count(*) as duplicate_member from nodelogin.group_assign "+
@@ -587,10 +672,9 @@ const groupassign = (req, res) => {
       console.log("duplicate member "+ duplicateMember)
       res.send(result);
      } else {
-      const role = "member";
-      const id = parseInt(Math.random()*1000000)
-      
-      const sqlAssignGroup = "insert into nodelogin.group_assign ( assign_id, username, groupname, group_role ) values ('"+id+"','"+username+"','"+groupname+"','"+role+"');";
+        
+        updatedRole =true 
+      const sqlAssignGroup = "insert into nodelogin.group_assign ( username, groupname, admin ) values ('"+username+"','"+groupname+"','"+updatedRole+"');";
      console.log("Inserting into "+sqlAssignGroup);
       try {
       con.query(sqlAssignGroup, function (err, result) {
@@ -617,7 +701,88 @@ const groupassign = (req, res) => {
   }
 
 
- 
+  const groupadminassign = (req, res) => {
+    console.log("request - assign group admin to user" + req.body);
+    const groupname = Object.values(req.body.groupname).toString().replaceAll(',','');
+    const username = Object.values(req.body.username).toString().replaceAll(',','');
+    console.log ("Assign user "+username+" as admin in "+groupname)
+    // check duplicates
+  
+    const sqlCheckDuplicateUser = "select count(*) as duplicate_member from nodelogin.group_assign "+
+    "where groupname='"+groupname+"' and username='"+username+"'";
+    console.log ("Check if user is in group "+sqlCheckDuplicateUser)
+    //var duplicateMember = true;
+    var duplicateUser = 0
+    try {
+      con.query(sqlCheckDuplicateUser, function (err, result) {
+       if (err) throw err;
+       duplicateUser=result[0].duplicate_member;
+       console.log("User found "+duplicateUser)
+        
+       if (duplicateUser==0){
+        console.log("No user "+username+" found in group "+groupname)
+       
+        res.send(result);
+       } else {
+        
+       
+        console.log("User "+username+" found in group "+groupname)
+       
+      const sqlUpdateAdmin = "update nodelogin.group_assign set group_role ='admin' where groupname='"+groupname+"' and username='"+username+"';";
+      console.log("Update admin "+sqlUpdateAdmin);
+        try {
+        con.query(sqlUpdateAdmin, function (err, result) {
+         if (err) throw err;
+         return result;
+         });
+        
+        } catch (err){
+          console.log("groupadminassign - Error in updating admin role")
+          console.log(err);
+        }
+  
+       
+       }
+  
+       });
+  
+      
+      } catch (err){
+        console.log("assign user to group - Error querying group_assign")
+        console.log(err);
+      } 
+    
+    }
+  
+    const groupadminremove = (req, res) => {
+      console.log("request - remove group admin to user" + req.body);
+      const groupname = Object.values(req.body.groupname).toString().replaceAll(',','');
+      const username = Object.values(req.body.username).toString().replaceAll(',','');
+      console.log ("Remove user "+username+" as admin in "+groupname)
+         
+        const sqlUpdateAdmin = "update nodelogin.group_assign set group_role ='member' where groupname='"+groupname+"' and username='"+username+"';";
+        console.log("Update admin "+sqlUpdateAdmin);
+          try {
+          con.query(sqlUpdateAdmin, function (err, result) {
+           if (err) throw err;
+           return result;
+           });
+          
+          } catch (err){
+            console.log("groupadminassign - Error in updating admin role")
+            console.log(err);
+          }
+    
+         
+  }
+    
+         
+    
+        
+       
+      
+      
+    
     
     //app.post('/userexist', function(req, res){
     const userexist =  (req, res) => {
@@ -672,14 +837,16 @@ const groupassign = (req, res) => {
     updateemail,
     updatepass, 
     newuser, 
-    checkgroup, 
     byemail, 
     byusername, 
     updateadm, 
-    checkusergroup,
+    checkgroup,
     creategroup,
     groupexist,
     groupassign,
     userexist,
+    listgroup,
     groupremove,
-    groupadmin}
+    groupadminassign,
+    groupadminremove,
+    listusers}
