@@ -258,8 +258,8 @@ const activate = (req, res)=>{
      console.log("request - extracting user list " + req.body);
      try {
       
-       listuserssql = "select username as value, username as label from nodelogin.accounts"
-      
+    //   listuserssql = "select username as value, username as label from nodelogin.accounts"
+       listuserssql = "select username from nodelogin.accounts"
        console.log("Get list of groups query" +listuserssql);
       con.query(listuserssql,
       function(err, rows){
@@ -279,10 +279,10 @@ const activate = (req, res)=>{
     console.log("request - extracting grouplist " + req.body);
     try {
       groupname = Object.values(req.body.groupname).toString().replaceAll(',','');
-      listgroupsql = "select groupname as value, groupname as label from nodelogin.group where groupname like '%"+groupname+"%'"
+      listgroupsql = "select groupname from nodelogin.group where groupname like '%"+groupname+"%'"
      
     } catch (err){
-      listgroupsql = "select groupname as value, groupname as label from nodelogin.group"
+      listgroupsql = "select groupname from nodelogin.group"
     }
      
      console.log("Get list of groups query" +listgroupsql);
