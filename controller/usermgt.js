@@ -481,9 +481,9 @@ const checkgroup = (req, res)=>{
         
       } else {
 
-        const id = parseInt(Math.random()*100000)
+      //  const id = parseInt(Math.random()*100000)
         
-        const sqlInsertGroup = "insert into nodelogin.group ( id ,groupname ) values ('"+id+"','"+groupname+"');";
+        const sqlInsertGroup = "insert into nodelogin.group (groupname ) values ('"+groupname+"');";
        console.log("Inserting into "+sqlInsertGroup);
         try {
         con.query(sqlInsertGroup, function (err, result) {
@@ -498,46 +498,41 @@ const checkgroup = (req, res)=>{
       res.send(rows[0]);
   })
 }
-// app.post('/checkusergroup', function (req, res){
-//  console.log("request - checking user group "+ req.body);
-//  const username = Object.values(req.body.username).toString().replaceAll(',','');
-//  const sqlUserGroup  = "select group, username from nodelogin.group where name='"+username+"'";
-//  console.log("checkusergroup - check "+sqlUserGroup);
-
-//  // check user's group
-//  console.log(sqlUserGroup);
-//  con.query(sqlUserGroup ,
-//  function(err, rows){
-//      if(err) throw err;
-//      console.log(rows);
-
-//      res.send(rows);
-//  });
 
 
-// })
 
- 
- 
-//app.post('/checkusergroup', function (req, res){
+const groupedit = (req, res) =>{
+  var groupname = Object.values(req.body.groupname).toString().replaceAll(',','');
+  groupname = groupname.replaceAll(' ','')
+  const sql = "select username from "
+  + "nodelogin.group_assign where groupname ='"+groupname+"'";
+  var members=""
+  console.log("SQL to get groupmembers "+ sql)
+  try {
+    con.query(sql, function (err, result) {
+     if (err) throw err;
+    
+     console.log("size of result "+result.length)
+
+     for (var i =0; i<result.length; i++)
+     members = members+result[i].username+","
+     console.log(members)
+     res.send(result);
+     });
+
+     
+     
+    } catch (err){
+      console.log("groupmembers extracting  - group details errors ")
+      console.log(err);
+      
+    }
+
+    console.log("members " +members);
+  //groupedit  return members
+}  
 
 
-//  app.post('/byemail', function(req, res){
-   
-//   console.log("request - extracting username, active, admin, email " + req.body);
-//   const email = Object.values(req.body.email).toString().replaceAll(',','');
-  
-//    const sql = "select username, email, active, admin from "
-//    + "nodelogin.accounts where email ='"+email+"'";
-//    console.log(sql);
-//    con.query(sql ,
-//    function(err, rows){
-//        if(err) throw err;
-//        console.log(rows[0]);
-//        res.send(rows[0]);
-//    });
-
-// });
 
 
 
@@ -651,7 +646,7 @@ const groupexist = (req, res) =>{
 //app.post('/groupassign', function (req, res){
 const groupassign = (req, res) => {
   console.log("request - assign group " + req.body);
-  const groupname = Object.values(req.body.groupname).toString().replaceAll(',','');
+  const groupname = Object.values(req.body.groupname).toString().replaceAll(',','').replaceAll(' ',);
   const username = Object.values(req.body.username).toString().replaceAll(',','');
 //  const role = Object.values(req.body.role).toString().replaceAll(',','');
   // check duplicates
@@ -674,7 +669,7 @@ const groupassign = (req, res) => {
      } else {
         
         updatedRole =true 
-      const sqlAssignGroup = "insert into nodelogin.group_assign ( username, groupname, admin ) values ('"+username+"','"+groupname+"','"+updatedRole+"');";
+      const sqlAssignGroup = "insert into nodelogin.group_assign ( username, groupname, admin ) values ('"+username+"','"+groupname+"',false);";
      console.log("Inserting into "+sqlAssignGroup);
       try {
       con.query(sqlAssignGroup, function (err, result) {
@@ -803,8 +798,8 @@ const groupassign = (req, res) => {
 
     const groupremove = (req,res)=>{
       console.log("removing user from group :"+req.body);
-      const username = Object.values(req.body.username).toString().replaceAll(',','');
-      const groupname = Object.values(req.body.groupname).toString().replaceAll(',','');
+      const username = Object.values(req.body.username).toString().replaceAll(',','').replaceAll(' ','');
+      const groupname = Object.values(req.body.groupname).toString().replaceAll(',','').replaceAll(' ','');
     
        console.log("removing "+username+" from "+groupname)
          // check if username and/or email exist
@@ -849,4 +844,5 @@ const groupassign = (req, res) => {
     groupremove,
     groupadminassign,
     groupadminremove,
+    groupedit,
     listusers}
