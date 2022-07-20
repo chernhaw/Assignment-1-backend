@@ -389,16 +389,13 @@ const  listlistenabledusers =(req, res)=>{
     const username = Object.values(req.body.username).toString().replaceAll(',','');
     const password = Object.values(req.body.password).toString().replaceAll(',','');
     const email = Object.values(req.body.email).toString().replaceAll(',','');
-    const admin = Object.values(req.body.admin).toString().replaceAll(',','');
+  
      console.log(username);
      console.log(password);
      console.log(email);
-     console.log(admin);
+     
 
-     var isAdmin ='N';
-     if (admin){
-        isAdmin='Y';
-     } 
+   
      // check if username and/or email exist
      const sqlName = "select username from "
      + "nodelogin.accounts where username ='"+username+"'";
@@ -452,7 +449,7 @@ const  listlistenabledusers =(req, res)=>{
                
                 const encryPass = passwordEncrypt(password);
                 
-                sqlInsert = "insert into nodelogin.accounts ( username, password, email, admin, active) values ('"+username+"','"+encryPass+"','"+email+"','"+isAdmin+"','Y');";
+                sqlInsert = "insert into nodelogin.accounts ( username, password, email, active) values ('"+username+"','"+encryPass+"','"+email+"','Y');";
                 console.log("checkExisting - "+sqlInsert);
                 try {
                 con.query(sqlInsert, function (err, result) {
@@ -483,6 +480,7 @@ const checkgroup = (req, res)=>{
  try {
   groupname = Object.values(req.body.groupname).toString().replaceAll(',','');
  } catch (err){
+  console.log("No groupname provides")
   groupname="";
  }
 
@@ -497,9 +495,9 @@ const checkgroup = (req, res)=>{
  const username = Object.values(req.body.username).toString().replaceAll(',','');
  var sqlUserGroupRole 
  if (groupname.length==0){
-    sqlUserGroupRole  = "select count(*) as admin from nodelogin.group_assign where username='"+username+"' and admin=true";
+    sqlUserGroupRole  = "select count(*) as admin from nodelogin.group_assign where username='"+username+"' and admin='Y'";
  } else {
-  sqlUserGroupRole  = "select count(*) as admin from nodelogin.group_assign where username='"+username+"' and groupname='"+groupname+"' and admin=true";
+  sqlUserGroupRole  = "select count(*) as admin from nodelogin.group_assign where username='"+username+"' and groupname='"+groupname+"' and admin='Y'";
  }
 
  if (checkadmin.length==0){
