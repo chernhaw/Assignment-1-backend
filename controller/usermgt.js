@@ -13,16 +13,7 @@
 
 const env = require('dotenv')
  env.config({path:'./config.env'})
-// env.ok(function(err) {
-//   if (!err) return
-//   console.error(err)
-//   process.exit(1)
-// })
 
-// function handleEnv (err) {
-//   if (!err) return
-//   process.exit(1)
-// }
 
 
  var con = mysql.createConnection({
@@ -37,22 +28,7 @@ const env = require('dotenv')
  } );
 
 
-// app.post('/email', function(req, res){
-   
-//   console.log("request - extracting email " + req.body);
-//   const username = Object.values(req.body.username).toString().replaceAll(',','');
-  
-//    const sql = "select email from "
-//    + "nodelogin.accounts where username ='"+username+"'";
-//    console.log(sql);
-//    con.query(sql ,
-//    function(err, rows){
-//        if(err) throw err;
-//        console.log(rows[0].email);
-//        res.send(rows[0]);
-//    });
 
-// });
 
 //app.post('/updateemail', function(req, res){
 const updateemail =(req,res)=>{
@@ -267,14 +243,14 @@ const activate = (req, res)=>{
     console.log("request - extracting admin " + req.body);
     const username = Object.values(req.body.username).toString().replaceAll(',','');
     
-     const sql = "select admin from "
-     + "nodelogin.accounts where username ='"+username+"'";
+     const sql = "select count (*) from "
+     + "nodelogin.group_assign where username ='"+username+"' and admin='Y'";
      console.log(sql);
      con.query(sql ,
      function(err, rows){
          if(err) throw err;
-         console.log(rows[0].admin);
-         res.send(rows[0]);
+         console.log(rows[0].count);
+         res.send(rows);
      });
   
   }
@@ -285,7 +261,7 @@ const activate = (req, res)=>{
     try {
      
    //   listuserssql = "select username as value, username as label from nodelogin.accounts"
-      listuserssql = "SELECT distinct(username) FROM nodelogin.group_assign where admin = true"
+      listuserssql = "SELECT distinct(username) FROM nodelogin.group_assign where admin = 'Y'"
       console.log("Get list of groups query" +listuserssql);
      con.query(listuserssql,
      function(err, rows){
@@ -528,7 +504,7 @@ const adminassign = (req, res)=>{
   const username = Object.values(req.body.username).toString().replaceAll(',','').replaceAll(' ','');
   
 
-  const sqlAdmin = "update group_assign set admin = true where username ='"+username+"'";
+  const sqlAdmin = "update group_assign set admin = 'Y' where username ='"+username+"'";
   console.log(sqlAdmin);
  con.query(sqlAdmin ,
  function(err, rows){
@@ -856,7 +832,7 @@ const groupassign = (req, res) => {
       const username = Object.values(req.body.username).toString().replaceAll(',','');
       console.log ("Remove user "+username+" as admin")
          
-        const sqlUpdateAdmin = "update nodelogin.group_assign set admin=false where username='"+username+"';";
+        const sqlUpdateAdmin = "update nodelogin.group_assign set admin='N' where username='"+username+"';";
         console.log("Update admin "+sqlUpdateAdmin);
           try {
           con.query(sqlUpdateAdmin, function (err, result) {
