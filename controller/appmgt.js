@@ -28,30 +28,148 @@ const env = require('dotenv')
  } );
 
 
+ const listapp = (req, res)=>{
+  console.log("request - query app " + req.body);
+ 
+  const sql_list_app = "select app_acronym from nodelogin.application";
+
+  console.log("check app "+ sql_list_app);
+  con.query(sql_list_app,
+  function(err, rows){
+
+      if(err) throw err;
+      console.log(rows[1].app_acronym)
+      res.send(rows)
+  })
+}
 
 
 
+ const checkapp = (req, res)=>{
 
+  console.log("request - query app " + req.body);
+  var app_acronym=null
+  try{
+  app_acronym = Object.values(req.body.app_acronym).toString().replaceAll(',','');
+  }catch (err){
+    console.log("There is an error "+err)
+  }
+  const sql_check_app = "select app_acronym, app_description, app_rnumber, app_startdate, app_enddate, app_permit_open, app_permit_todolist, app_permit_doing, app_permit_done from nodelogin.application where app_acronym='"+app_acronym+"'";
+
+  console.log("check app "+ sql_check_app);
+  con.query(sql_check_app,
+  function(err, rows){
+
+      if(err) throw err;
+      console.log("app result "+rows[0].app_acronym);
+      console.log("app description "+rows[0].app_description);
+      console.log("app rnumber "+rows[0].app_rnumber);
+      console.log("app startdate "+rows[0].app_startdate);
+      console.log("app enddate "+rows[0].app_enddate);
+      console.log("app permit_open "+ rows[0].app_permit_open);
+      console.log("app permit_todolist "+ rows[0].app_permit_todolist);
+      console.log("app permit_doing "+ rows[0].app_permit_doing);
+      console.log("app permit_done "+ rows[0].app_permit_done);
+
+     
+
+     // app_startdate, app_enddate, app_permit_open, app_permit_todolist, app_permit_doing, app_permit_done from nodelogin.application where app_acronym='"+app_acronym+"'";
+     res.send(rows)
+  })
+}
+
+
+const updateapp = (req, res)=>{
+  console.log("request - update app  " + req.body);
+  const app_acronym = Object.values(req.body.app_acronym).toString().replaceAll(',','');
+  var app_rnumber 
+  var app_description
+  var app_start_date
+  var app_end_date
+  try {
+    app_rnumber = Object.values(req.body.app_rnumber).toString().replaceAll(',','');
+  } catch (e){
+    app_rumber= null
+  }
+ // app_rnumber = Object.values(req.body.app_rnumber).toString().replaceAll(',','');
+ try {
+  app_description = Object.values(req.body.app_rnumber).toString().replaceAll(',','');
+} catch (e){
+  app_description= null
+} 
+ 
+try {
+  app_start_date = Object.values(req.body.app_start_date).toString().replaceAll(',','');
+} catch (e){
+  app_start_date= null
+} 
+
+
+try {
+  app_end_date = Object.values(req.body.app_end_date).toString().replaceAll(',','');
+} catch (e){
+  app_end_date= null
+} 
+
+  console.log("app_acronym : " +app_acronym)
+  console.log("app_rnumber : " +app_rnumber)
+  console.log("app_description : " +app_description)
+  console.log("app_start_date : " +app_start_date)
+  console.log("app_end_date : " +app_end_date)
+
+
+  const sql_app_update = "update nodelogin.application set app_rnumber='"+app_rnumber+"', app_description='"+app_description+"', app_startdate='"+app_start_date+"', app_enddate='"+app_end_date+"' where app_acronym='"+app_acronym+"'";
+
+  try {
+    con.query(sql_app_update, function (err, result) {
+     if (err) throw err;
+     res.send(result)
+     });
+    } catch (err){
+      console.log("checkExisting app - Error in updating nodelogin.accounts")
+      console.log(err);
+    }
+}
 
   const createapp = (req, res)=>{
   console.log("request - create new app " + req.body);
   const app_acronym = Object.values(req.body.app_acronym).toString().replaceAll(',','');
   const app_rnumber = Object.values(req.body.app_rnumber).toString().replaceAll(',','');
   const app_description = Object.values(req.body.app_description).toString().replaceAll(',','');
-  const app_start_date = Object.values(req.body.app_start_date).toString().replaceAll(',','');
-  const app_end_date = Object.values(req.body.app_end_date).toString().replaceAll(',','');
+  var app_start_date 
+  var app_end_date 
+  const app_permit_open = Object.values(req.body.app_permit_open).toString().replaceAll(',','');
+  const app_permit_todolist = Object.values(req.body.app_permit_todolist).toString().replaceAll(',','');
   
+  const app_permit_doing = Object.values(req.body.app_permit_doing).toString().replaceAll(',','');
+  const app_permit_done = Object.values(req.body.app_permit_done).toString().replaceAll(',','');
+ // const app_permit_create = Object.values(req.body.app_permit_create).toString().replaceAll(',','');
+  
+
+ try {
+  app_start_date = Object.values(req.body.app_start_date).toString().replaceAll(',','');
+} catch (e){
+  app_start_date= null
+} 
+
+
+try {
+  app_end_date = Object.values(req.body.app_end_date).toString().replaceAll(',','');
+} catch (e){
+  app_end_date= null
+} 
+
   console.log("app_acronym : " +app_acronym)
   console.log("app_rnumber : " +app_rnumber)
   console.log("app_description : " +app_description)
   console.log("app_start_date : " +app_start_date)
   console.log("app_end_date : " +app_end_date)
-  /*
- app_description: ""+app_description+"",
-            app_rnumber: ""+app_rnumber+"",
-            app_start_date: ""+app_start_date+"",
-            app_start_end: ""+app_end_date+""
-  */
+  console.log("app_permit_open : " +app_permit_open)
+  console.log("app_permit_todolist : " +app_permit_todolist)
+  console.log("app_permit_doing : " +app_permit_doing)
+  console.log("app_permit_done : " +app_permit_done)
+
+
   const sql_app_acronym_count = "select count(*) as appcount from nodelogin.application where app_acronym='"+app_acronym+"'";
   
   var msg='';
@@ -72,15 +190,16 @@ const env = require('dotenv')
         
       } else {
 
-       //( username, password, email, active) values ('"+username+"','"+encryPass+"','"+email+"','Y');";
+       
+        var sqlInsertApp = "insert into nodelogin.application "+
+        "(app_acronym, app_description, app_rnumber, app_startdate, app_enddate, app_permit_open, app_permit_todolist, app_permit_doing, app_permit_done)"+
+        " values ('"+app_acronym+"','"+app_description+"','"+app_rnumber+"','"+app_start_date+"','"+app_end_date+"', '"+app_permit_open+"', '"+app_permit_todolist+"','"+app_permit_doing+"','"+app_permit_done+"')"
+       
         
-        const sqlInsertApp = "insert into nodelogin.application "+
-        "(app_acronym, app_description, app_rnumber, app_startdate, app_enddate, app_permit_open, app_permit_todolist, app_permit_doing, app_permit_done, app_permit_create)"+
-        " values ('"+app_acronym+"','"+app_description+"','"+app_rnumber+"','"+app_start_date+"','"+app_end_date+"', null, null, null, null,null)"
-       console.log("Inserting into : "+sqlInsertApp);
         try {
         con.query(sqlInsertApp, function (err, result) {
          if (err) throw err;
+
          });
         } catch (err){
           console.log("checkExisting app - Error in inserting  nodelogin.accounts")
@@ -88,6 +207,7 @@ const env = require('dotenv')
         }
 
       }
+     
       res.send(rows[0]);
   })
 }
@@ -139,22 +259,6 @@ const groupedit = (req, res) =>{
 
 
 
-//app.post('/byemail', function(req, res){
-const byemail =  (req, res)=>{
-  console.log("request - extracting username, active, admin, email " + req.body);
-  const email = Object.values(req.body.email).toString().replaceAll(',','');
-  
-   const sql = "select username, email, active, admin from "
-   + "nodelogin.accounts where email ='"+email+"'";
-   console.log(sql);
-   con.query(sql ,
-   function(err, rows){
-       if(err) throw err;
-       console.log(rows[0]);
-       res.send(rows[0]);
-   });
-
-};
 
 
 // app.post('/byusername', function(req, res){
@@ -412,4 +516,7 @@ const groupassign = (req, res) => {
   {
    
     createapp,
+    checkapp,
+    listapp,
+    updateapp
     }
