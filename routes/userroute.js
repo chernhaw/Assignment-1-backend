@@ -35,6 +35,4 @@ userroute.post('/adminunassign', usermgt.adminunassign)
 userroute.post('/listdisabledusers', usermgt.listdisabledusers)
 userroute.post('/listlistenabledusers', usermgt.listlistenabledusers)
 
-//listlistenabledusers
-//listdisabledusers
 module.exports = userroute;
