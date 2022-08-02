@@ -27,9 +27,7 @@ const env = require('dotenv')
     function(err, rows){
   
         if(err) throw err;
-          for (var i=0; i<rows.length; i++){
-            console.log(rows[i])
-          }          
+        console.log(rows[1].plan_app_acronym)
         res.send(rows)
     })
   }
@@ -117,63 +115,95 @@ const updateplan = (req, res)=>{
     }
 }
 
-const createplan = (req, res)=>{
-  console.log("request - create new app " + req.body);
+
+
+const counttask = (req, res)=>{
+    const app_acronym = Object.values(req.body.app_acronym).toString().replaceAll(',','');
+    console.log("Create task for app "+app_acronym)
+
+    var sqlCountTaskApp = "select count(*) as taskcount from nodelogin.task where task_id like '"+app_acronym+"%'";
+
+  try {
+   
+    con.query(sqlCountTaskApp, function (err, result) {
+        if (err) throw err;
+        taskcount=result[0].taskcount 
+        console.log("Current task count in "+app_acronym+" is "+taskcount)
+        res.send(result)
+        
+     }); 
+    } catch (err){
+        console.log("check task count")
+        console.log(err);
+      }
+}
+
+const createtask = (req, res)=>{
+  console.log("request - create new task " + req.body);
+
   const app_acronym = Object.values(req.body.app_acronym).toString().replaceAll(',','');
-  const plan_mvp_name = Object.values(req.body.plan_mvp_name).toString().replaceAll(',','');
- 
-  var plan_start_date = null
-  var plan_end_date = null
-  try {
-    plan_start_date = Object.values(req.body.plan_start_date).toString().replaceAll(',','');
-  } catch (e){
-    plan_start_date= null
-  } 
-  
-  try {
-    plan_end_date = Object.values(req.body.plan_end_date).toString().replaceAll(',','');
-  } catch (e){
-    plan_end_date= null
-  } 
- 
- const plan_app_acronym=""+plan_mvp_name+app_acronym+""
+  console.log("Create task for app "+app_acronym)
+  const taskplan = Object.values(req.body.taskPlan).toString().replaceAll(',','');
+  console.log("Create task for task "+taskplan)
+  const taskdescription = Object.values(req.body.taskDescription).toString().replaceAll(',','');
+  console.log("Task description "+taskdescription)
+  const taskName = Object.values(req.body.taskName).toString().replaceAll(',','');
+  console.log("Taskname "+taskName)
+  const taskNotes=Object.values(req.body.taskNotes).toString().replaceAll(',',''); 
+  console.log("Task notes "+taskNotes)
+  const taskcreator=Object.values(req.body.taskCreator).toString().replaceAll(',',''); 
+  console.log("Task creator "+taskcreator)
 
-  console.log("app_acronym : " +app_acronym)
- 
-  console.log("plan_mvp_name : " +plan_mvp_name)
-  console.log("plan_start_date : " +plan_start_date)
-  console.log("plan_end_date : " +plan_end_date)
+  // get current count of task for app
+  var sqlCountTaskApp = "select count(*) as taskcount from nodelogin.task where task_id like '"+app_acronym+"%'";
 
+  var taskcount = 0
+    
+    try {
+    con.query(sqlCountTaskApp, function (err, result) {
+        if (err) throw err;
+        taskcount=parseInt (result[0].taskcount)  
+        console.log("Current task count in "+app_acronym+" is "+taskcount)
+        
+        taskcount = taskcount+1
+    console.log("New task count in "+app_acronym+" is "+taskcount)
+     var task_id = ""+app_acronym+"_"+taskcount.toString()
+     console.log("new task count in string "+taskcount.toString())
+     console.log("Create new task id for task "+ task_id)
+     var sqlInsertTask = "insert into nodelogin.task "+
+     "(task_name, task_description, task_id, task_notes, task_app_acronym, task_state, task_creator, task_owner, task_createDate )"+
+     " values ('"+taskName+
+     "','"+taskdescription
+     +"','"+task_id
+     
+     + "','"+taskNotes
+     +"','"+app_acronym+
+     "','Open', '"
+     +taskcreator
+     +"',null,"
+     +"CURRENT_TIMESTAMP)"
+     console.log("Creating new task sql "+sqlInsertTask)
 
-  console.log("plan_app_acronym : " +plan_app_acronym)
- 
+     con.query(sqlInsertTask, function (err, result) {
+        if (err) throw err;
 
-  
-        var sqlInsertPlan = "insert into nodelogin.plan "+
-        "(plan_mvp_name, plan_startdate, plan_enddate, plan_app_acronym )"+
-        " values ('"+plan_mvp_name+"','"+plan_start_date+"','"+plan_end_date+"','"+plan_app_acronym+"')"
-        console.log(sqlInsertPlan)
+        });
 
-        try {
-        con.query(sqlInsertPlan, function (err, result) {
-         if (err) throw err;
-
-         });
-        } catch (err){
-          console.log("checkExisting app - Error in inserting  nodelogin.accounts")
-          console.log(err);
-        }
-     //   res.send(res)
+        
+     });
+    }
+ catch (err){
+    console.log("checkExisting app - Error checking app count")
+    console.log(err);
+  }
+    
       }
      
       
   module.exports= 
   {
    
-    createplan,
-    checkplan,
-    listplans,
-    updateplan,
-    retrieveplan,
-
+    createtask,
+    counttask
+   
     }
