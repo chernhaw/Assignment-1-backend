@@ -5,6 +5,6 @@ const taskmgt = require('../controller/taskmgt')
 
 taskroute.post('/createtask', taskmgt.createtask)
 taskroute.post('/counttask', taskmgt.counttask)
-//taskroute.post('/listtask', taskmgt.listtask)
+taskroute.post('/listapptasks', taskmgt.getAllTasksByApp)
 
 module.exports = taskroute;
