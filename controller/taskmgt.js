@@ -138,6 +138,32 @@ const counttask = (req, res)=>{
       }
 }
 
+const getAllTasksByApp = (req, res)=>{
+  const app_acronym = Object.values(req.body.app_acronym).toString().replaceAll(',','');
+  console.log("getting app_acronym task : "+app_acronym)
+  const sqlGetAppTasks = "select task_id, task_name, task_state from nodelogin.task where task_app_acronym ='"+app_acronym+"' order by task_state"
+  try {
+    con.query(sqlGetAppTasks, function (err, result) {
+        if (err) throw err;
+        
+       
+        for ( var i=0; i<result.length; i++){
+          console.log("Task id :"+result[i].task_id)
+          console.log("Task name :"+result[i].task_name)  
+          console.log("Task status :"+result[i].task_state)             
+          console.log("-----------------------------")
+       } 
+       res.send(result)
+   
+    })
+  } catch (err){
+    console.log("getting app task - Error checking")
+    console.log(err);
+  }
+
+}
+
+
 const createtask = (req, res)=>{
   console.log("request - create new task " + req.body);
 
@@ -204,6 +230,13 @@ const createtask = (req, res)=>{
   {
    
     createtask,
-    counttask
+    counttask,
+    getAllTasksByApp
+    // getTaskByAppTodo,
+    // getTaskByAppDoing,
+    // getTaskByAppDone,
+    // getTaskByAppClose,
+
+
    
     }
