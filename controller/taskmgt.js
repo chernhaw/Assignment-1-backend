@@ -88,29 +88,32 @@ const retrieveplan = (req, res)=>{
   
 
 
-const updateplan = (req, res)=>{
-  console.log("request - update app  " + req.body);
-  const plan_app_acronym = Object.values(req.body.plan_app_acronym).toString().replaceAll(',','');
+const getTaskDetail = (req, res)=>{
+  console.log("request - get task detail  " + req.body);
   
-  const plan_start_date = Object.values(req.body.plan_start_date).toString().replaceAll(',','');
-  const plan_end_date = Object.values(req.body.plan_end_date).toString().replaceAll(',','');
+  
+  const task_id = Object.values(req.body.task_id).toString().replaceAll(',','');
 
-
-  console.log("plan_app_acronym : " +plan_app_acronym)
- 
-  console.log("plan_start_date : " +plan_start_date)
-  console.log("plan_end_date : " +plan_end_date)
- 
-
-  const sql_plan_update = "update nodelogin.plan set plan_startdate='"+plan_start_date+"', plan_enddate='"+plan_end_date+"' where plan_app_acronym='"+plan_app_acronym+"'";
+  const sql_get_task_detail = "select "+
+  "task_id, "+
+  "task_name, "+
+  "task_description, "+
+  "task_notes, "+
+  "task_plan, "+
+  "task_app_acronym, "+
+  "task_state, "+
+  "task_creator, "+
+  "task_owner, "+
+  "task_createDate "+
+  "from nodelogin.task where task_id='"+task_id+"'"
 
   try {
-    con.query(sql_plan_update, function (err, result) {
+    con.query(sql_get_task_detail, function (err, result) {
      if (err) throw err;
      res.send(result)
      });
     } catch (err){
-      console.log("error in updating plan -")
+      console.log("error in extracting task detail - "+task_id)
       console.log(err);
     }
 }
@@ -163,6 +166,69 @@ const getAllTasksByApp = (req, res)=>{
 
 }
 
+const getTaskTodoGroup=(req, res)=>{
+  console.log("Querying application table app_todolist to retrieve group and user")
+
+
+}
+
+const groupaccess = (req, res)=>{
+
+
+  var access_type = req.body.access_type.toString()
+  console.log("access_type "+access_type)
+  var app_acronym = req.body.app_acronym.toString()
+  console.log("app_acronym "+app_acronym)
+  // create query for application table
+
+  var sqlAccess = ""
+
+  if (access_type == "Open"){
+    sqlAccess= "select app_permit_open as access from nodelogin.application where app_acronym ='"+app_acronym+"'"
+  } else if (access_type == "Todo"){
+    sqlAccess= "select app_permit_todolist as access from nodelogin.application where app_acronym ='"+app_acronym+"'"
+  
+  } else if (access_type == "Doing"){
+
+    sqlAccess= "select app_permit_doing as access from nodelogin.application where app_acronym ='"+app_acronym+"'"
+
+  } else if (access_type == "Done"){
+    sqlAccess= "select app_permit_done as access from nodelogin.application where app_acronym ='"+app_acronym+"'"
+  } else if (access_type == "Close"){
+    sqlAccess= "select app_permit_close as access from nodelogin.application where app_acronym ='"+app_acronym+"'"
+  }
+ 
+  try {
+    con.query(sqlAccess, function (err, result) {
+        if (err) throw err;
+        
+          console.log("Task id :"+result[0].access)
+         
+       // split result into array
+       var groupnamesArray =[]
+
+      
+       groupnamesArray=result[0].access.toString().split(" ")
+
+       groupnamesArray= groupnamesArray.slice(1,groupnamesArray.length)
+       for (var i=0; i<groupnamesArray.length-1; i++){
+        console.log("groupnamesArray["+i+"] =" +groupnamesArray[i])
+       }
+      
+       /////////////////NAR BEI ANOTHER NESTED SQL
+
+       console.log("Groupname for app "+app_acronym+" and access type "+access_type)
+    //   res.send(result)
+   
+    })
+  } catch (err){
+
+
+ 
+
+
+}
+}
 
 const createtask = (req, res)=>{
   console.log("request - create new task " + req.body);
@@ -231,12 +297,12 @@ const createtask = (req, res)=>{
    
     createtask,
     counttask,
-    getAllTasksByApp
+    getAllTasksByApp,
+    getTaskDetail,
+   
+    groupaccess
     // getTaskByAppTodo,
     // getTaskByAppDoing,
     // getTaskByAppDone,
     // getTaskByAppClose,
-
-
-   
     }
