@@ -87,6 +87,8 @@ const retrieveplan = (req, res)=>{
   }
   
 
+  
+  
 
 const getTaskDetail = (req, res)=>{
   console.log("request - get task detail  " + req.body);
@@ -266,24 +268,55 @@ const groupaccess = (req, res)=>{
  
 const updateTask = (req, res)=>{
 
+  console.log("Update task ")
   const app_acronym = Object.values(req.body.app_acronym).toString().replaceAll(',','');
-  console.log("Create task for app "+app_acronym)
+  console.log("task for app "+app_acronym)
   const taskplan = Object.values(req.body.taskPlan).toString().replaceAll(',','');
   console.log("Create task for task "+taskplan)
-  const taskdescription = Object.values(req.body.taskDescription).toString().replaceAll(',','');
-  console.log("Task description "+taskdescription)
+  
   const taskName = Object.values(req.body.taskName).toString().replaceAll(',','');
   console.log("Taskname "+taskName)
+
+  const taskdescription = Object.values(req.body.taskDescription).toString().replaceAll(',','');
+  console.log("Task description "+taskdescription)
+
+  const taskstate=Object.values(req.body.taskState).toString().replaceAll(',',''); 
+  console.log("Task state "+taskstate)
+  
   const taskNotes=Object.values(req.body.taskNotes).toString().replaceAll(',',''); 
   console.log("Task notes "+taskNotes)
+
   const taskOwner=Object.values(req.body.taskOwner).toString().replaceAll(',',''); 
   console.log("Task owner "+taskOwner)
-  const taskstate=Object.values(req.body.taskState).toString().replaceAll(',',''); 
-  console.log("Task creator "+taskstate)
+  
+  const taskId=Object.values(req.body.taskId).toString().replaceAll(',',''); 
+  console.log("Task Id "+taskId)
 
 
+  var sqlUpdateTask = "update nodelogin.task "
+  + "set task_name='"+taskName
+  +"', task_description ='"+taskdescription
+
+  +"', task_state = '"+taskstate
+  +"', task_notes = '"+taskNotes
+  +"', task_owner = '"+taskOwner
+  +"' where task_id ='"+taskId+"'"
+
+
+  try {
+    con.query(sqlUpdateTask, function (err, result) {
+        if (err) throw err;
+       
+        console.log("Run update task  "+sqlUpdateTask)
+       });
+    }
+ catch (err){
+    console.log("Update task - Error updating app task")
+    console.log(err);
+  }
 
 }
+
 
 const createtask = (req, res)=>{
   console.log("request - create new task " + req.body);
@@ -355,7 +388,7 @@ const createtask = (req, res)=>{
     getAllTasksByApp,
     getTaskDetail,
     updateTask,
-   
+    
     groupaccess
     // getTaskByAppTodo,
     // getTaskByAppDoing,
