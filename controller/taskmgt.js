@@ -110,6 +110,31 @@ const getTaskDetail = (req, res)=>{
   try {
     con.query(sql_get_task_detail, function (err, result) {
      if (err) throw err;
+
+      console.log("Retrieved task details ")
+      console.log("task_id :"+result[0].task_id)
+      console.log("task_description :"+result[0].task_description)
+      console.log("task_notes :"+result[0].task_notes)
+      console.log("task_plan :"+result[0].task_plan)
+      console.log("task_app_acronym :"+result[0].task_app_acronym)
+      console.log("task_state :"+result[0].task_state)
+      console.log("task_owner :"+result[0].task_owner)
+      console.log("task_createDate :"+result[0].task_createDate)
+
+      /*
+      "task_id, "+
+  "task_name, "+
+  "task_description, "+
+  "task_notes, "+
+  "task_plan, "+
+  "task_app_acronym, "+
+  "task_state, "+
+  "task_creator, "+
+  "task_owner, "+
+  "task_createDate "+
+  "from nodelogin.task where task_id='
+      */
+
      res.send(result)
      });
     } catch (err){
@@ -183,6 +208,7 @@ const groupaccess = (req, res)=>{
 
   var sqlAccess = ""
 
+  // Step 1 get group permit access in open/todo/doing/Done from appliaction table
   if (access_type == "Open"){
     sqlAccess= "select app_permit_open as access from nodelogin.application where app_acronym ='"+app_acronym+"'"
   } else if (access_type == "Todo"){
@@ -198,36 +224,65 @@ const groupaccess = (req, res)=>{
     sqlAccess= "select app_permit_close as access from nodelogin.application where app_acronym ='"+app_acronym+"'"
   }
  
-  try {
+
+
+     
     con.query(sqlAccess, function (err, result) {
         if (err) throw err;
         
-          console.log("Task id :"+result[0].access)
+          console.log("Task id access for"+access_type+" is : "+result[0].access)
          
+          groupnamesStr=result[0].access.toString().replaceAll(" ","','")
        // split result into array
-       var groupnamesArray =[]
+         console.log("groupnamesStr "+groupnamesStr)
+         groupnamesStr=groupnamesStr.substring(2, groupnamesStr.length)+"'"
 
-      
-       groupnamesArray=result[0].access.toString().split(" ")
-
-       groupnamesArray= groupnamesArray.slice(1,groupnamesArray.length)
-       for (var i=0; i<groupnamesArray.length-1; i++){
-        console.log("groupnamesArray["+i+"] =" +groupnamesArray[i])
-       }
-      
+         console.log("groupnamesStr "+groupnamesStr)
+    
        /////////////////NAR BEI ANOTHER NESTED SQL
+      // Step 2 get groupmembers in these groups 
+       const sqlAccessMember = "select username as access from nodelogin.group_assign where groupname in ("+groupnamesStr+")"
 
-       console.log("Groupname for app "+app_acronym+" and access type "+access_type)
-    //   res.send(result)
+       con.query(sqlAccessMember, function (err, result) {
+        if (err) throw err;
+        
+          console.log("Members in groups "+groupnamesStr +" query with "+sqlAccessMember)
+         
+          for ( var i=0; i<result.length; i++){
+            console.log("Username :"+result[i].access)
+                      
+          }
+          res.send(result)
+       })
+
+      
+    }
    
-    })
-  } catch (err){
-
-
+    );
+   
+  }
  
+  
+ 
+const updateTask = (req, res)=>{
+
+  const app_acronym = Object.values(req.body.app_acronym).toString().replaceAll(',','');
+  console.log("Create task for app "+app_acronym)
+  const taskplan = Object.values(req.body.taskPlan).toString().replaceAll(',','');
+  console.log("Create task for task "+taskplan)
+  const taskdescription = Object.values(req.body.taskDescription).toString().replaceAll(',','');
+  console.log("Task description "+taskdescription)
+  const taskName = Object.values(req.body.taskName).toString().replaceAll(',','');
+  console.log("Taskname "+taskName)
+  const taskNotes=Object.values(req.body.taskNotes).toString().replaceAll(',',''); 
+  console.log("Task notes "+taskNotes)
+  const taskOwner=Object.values(req.body.taskOwner).toString().replaceAll(',',''); 
+  console.log("Task owner "+taskOwner)
+  const taskstate=Object.values(req.body.taskState).toString().replaceAll(',',''); 
+  console.log("Task creator "+taskstate)
 
 
-}
+
 }
 
 const createtask = (req, res)=>{
@@ -299,6 +354,7 @@ const createtask = (req, res)=>{
     counttask,
     getAllTasksByApp,
     getTaskDetail,
+    updateTask,
    
     groupaccess
     // getTaskByAppTodo,
