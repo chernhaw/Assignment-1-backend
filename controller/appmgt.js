@@ -89,7 +89,12 @@ const updateapp = (req, res)=>{
 } 
  
 try {
+
+  //app_start_date.split('T')[0]
   app_start_date = Object.values(req.body.app_start_date).toString().replaceAll(',','');
+
+  app_start_date=app_start_date.substring(0,10)
+ 
 } catch (e){
   app_start_date= null
 } 
@@ -97,6 +102,7 @@ try {
 
 try {
   app_end_date = Object.values(req.body.app_end_date).toString().replaceAll(',','');
+  app_end_date = app_end_date.substring(0,10)
 } catch (e){
   app_end_date= null
 } 

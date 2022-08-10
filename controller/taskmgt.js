@@ -123,20 +123,7 @@ const getTaskDetail = (req, res)=>{
       console.log("task_owner :"+result[0].task_owner)
       console.log("task_createDate :"+result[0].task_createDate)
 
-      /*
-      "task_id, "+
-  "task_name, "+
-  "task_description, "+
-  "task_notes, "+
-  "task_plan, "+
-  "task_app_acronym, "+
-  "task_state, "+
-  "task_creator, "+
-  "task_owner, "+
-  "task_createDate "+
-  "from nodelogin.task where task_id='
-      */
-
+   
      res.send(result)
      });
     } catch (err){
@@ -193,11 +180,7 @@ const getAllTasksByApp = (req, res)=>{
 
 }
 
-const getTaskTodoGroup=(req, res)=>{
-  console.log("Querying application table app_todolist to retrieve group and user")
 
-
-}
 
 const groupaccess = (req, res)=>{
 
@@ -223,23 +206,23 @@ const groupaccess = (req, res)=>{
   } else if (access_type == "Done"){
     sqlAccess= "select app_permit_done as access from nodelogin.application where app_acronym ='"+app_acronym+"'"
   } else if (access_type == "Close"){
-    sqlAccess= "select app_permit_close as access from nodelogin.application where app_acronym ='"+app_acronym+"'"
+    access_type = "Done"
+    sqlAccess= "select app_permit_done as access from nodelogin.application where app_acronym ='"+app_acronym+"'"
   }
  
 
-
-     
     con.query(sqlAccess, function (err, result) {
         if (err) throw err;
         
           console.log("Task id access for"+access_type+" is : "+result[0].access)
          
-          groupnamesStr=result[0].access.toString().replaceAll(" ","','")
+          groupnamesStr="'"+result[0].access.toString().replaceAll(" ","','")+"'"
+          groupnamesStr=groupnamesStr.substring(3,groupnamesStr.length)
+       //   groupnamesStr="'"+groupnamesStr.toString().replaceAll("'',", "")
        // split result into array
          console.log("groupnamesStr "+groupnamesStr)
-         groupnamesStr=groupnamesStr.substring(2, groupnamesStr.length)+"'"
 
-         console.log("groupnamesStr "+groupnamesStr)
+       
     
        /////////////////NAR BEI ANOTHER NESTED SQL
       // Step 2 get groupmembers in these groups 
@@ -256,7 +239,6 @@ const groupaccess = (req, res)=>{
           }
           res.send(result)
        })
-
       
     }
    
@@ -388,10 +370,6 @@ const createtask = (req, res)=>{
     getAllTasksByApp,
     getTaskDetail,
     updateTask,
-    
     groupaccess
-    // getTaskByAppTodo,
-    // getTaskByAppDoing,
-    // getTaskByAppDone,
-    // getTaskByAppClose,
+ 
     }
