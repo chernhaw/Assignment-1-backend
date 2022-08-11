@@ -6,8 +6,8 @@ var transporter = nodemailer.createTransport({
   service: 'Outlook',
   auth: {
 
-    user: 'chernhaw21@outlook.sg',
-    pass: 'PsalmOne00'
+    user: 'mail@sg',
+    pass: 'blabla'
 
   }
 });
