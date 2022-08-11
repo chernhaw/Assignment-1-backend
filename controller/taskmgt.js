@@ -3,11 +3,11 @@ var mysql = require('mysql');
 var nodemailer = require('nodemailer')
 
 var transporter = nodemailer.createTransport({
-  service: 'Outlook',
+  service: 'hotmail',
   auth: {
 
-    user: 'mail@sg',
-    pass: 'blabla'
+    user: 'chernhaw21@outlook.sg',
+    pass: 'PsalmOne00'
 
   }
 });
@@ -307,13 +307,38 @@ const updateTask = (req, res)=>{
 
 
   try {
+
+    
     con.query(sqlUpdateTask, function (err, result) {
         if (err) throw err;
        
         console.log("Run update task  "+sqlUpdateTask)
+
+        if (taskstate == "Done"){
+          var mailOptions = {
+            from: 'chernhaw21@outlook.sg',
+            to:'chernhaw@gmail.com',
+            subject: 'Task '+taskId+ ' is done',
+            text: 'Hi Lead,\nTask '+taskId+' is done and awaiting for your further action.\n'
+            +'Thanks.\n'
+            +'Regards,\n'
+            +'TMS'
+          };
+        
+        
+          transporter.sendMail(mailOptions, function(error, info){
+            console.log("Sending email: "+info)
+            if (error) {
+              console.log("Error sending mail "+error)
+            } else {
+              console.log("Email sent"+info.response)
+            }
+            
+          });}
+
        });
 
-       sendEmail()
+       
     }
  catch (err){
     console.log("Update task - Error updating app task")
@@ -322,30 +347,32 @@ const updateTask = (req, res)=>{
 
 }
 
-const sendEmail=()=>{
+// const sendEmail=()=>{
 
-  if (taskstate == "Done"){
-  var mailOptions = {
-    from: 'chernhaw21@outlook.sg',
-    to:'chernhaw@gmail.com',
-    subject: 'Task '+task_id+ ' is done',
-    text: 'Hi Lead,n\ Task '+task_id
-    +' is done and awaiting for your further action\n'
-    +' Thanks.\n'
-    +'\nRegards,'+
-    +'\nTMS'
-  };
+//   if (taskstate == "Done"){
+//   var mailOptions = {
+//     from: 'chernhaw21@outlook.sg',
+//     to:'chernhaw@gmail.com',
+//     subject: 'Task '+task_id+ ' is done',
+//     text: 'Hi Lead,\nTask '+task_id
+//     +' is done and awaiting for your further action.\n'
+//     +' Thanks.\n'
+//     +'\nRegards,'
+//     +'\nTMS'
+//   };
 
-  transporter.SendEmail(mailOptions, function(error, info){
-    if (error) {
-      console.log("Error sending mail "+error)
-    } else {
-      console.log("Email sent"+info.response)
-    }
+
+//   transporter.sendEmail(mailOptions, function(error, info){
+//     console.log("Sending email: "+info)
+//     if (error) {
+//       console.log("Error sending mail "+error)
+//     } else {
+//       console.log("Email sent"+info.response)
+//     }
     
-  });
-}
-}
+//   });
+// }
+// }
 const createtask = (req, res)=>{
   console.log("request - create new task " + req.body);
 
