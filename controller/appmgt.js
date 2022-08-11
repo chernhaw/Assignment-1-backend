@@ -76,6 +76,12 @@ const updateapp = (req, res)=>{
   var app_description
   var app_start_date
   var app_end_date
+
+  const app_permit_open = Object.values(req.body.app_permit_open).toString().replaceAll(',','');
+  const app_permit_todolist = Object.values(req.body.app_permit_todolist).toString().replaceAll(',','');
+  
+  const app_permit_doing = Object.values(req.body.app_permit_doing).toString().replaceAll(',','');
+  const app_permit_done = Object.values(req.body.app_permit_done).toString().replaceAll(',','');
   try {
     app_rnumber = Object.values(req.body.app_rnumber).toString().replaceAll(',','');
   } catch (e){
@@ -114,7 +120,15 @@ try {
   console.log("app_end_date : " +app_end_date)
 
 
-  const sql_app_update = "update nodelogin.application set app_rnumber='"+app_rnumber+"', app_description='"+app_description+"', app_startdate='"+app_start_date+"', app_enddate='"+app_end_date+"' where app_acronym='"+app_acronym+"'";
+  const sql_app_update = "update nodelogin.application set app_rnumber='"+app_rnumber
+  +"', app_description='"+app_description+
+  "', app_startdate='"+app_start_date+
+  "', app_enddate='"+app_end_date+
+  "', app_permit_open='"+app_permit_open+
+  "', app_permit_todolist='"+app_permit_todolist+
+  "', app_permit_doing='"+app_permit_doing+
+  "', app_permit_done='"+app_permit_done+
+  "' where app_acronym='"+app_acronym+"'";
 
   try {
     con.query(sql_app_update, function (err, result) {

@@ -1,5 +1,16 @@
 var mysql = require('mysql');
 
+var nodemailer = require('nodemailer')
+
+var transporter = nodemailer.createTransport({
+  service: 'Outlook',
+  auth: {
+
+    user: 'chernhaw21@outlook.sg',
+    pass: 'PsalmOne00'
+
+  }
+});
 const env = require('dotenv')
  env.config({path:'./config.env'})
 
@@ -182,8 +193,8 @@ const getAllTasksByApp = (req, res)=>{
 
 
 
-const groupaccess = (req, res)=>{
-
+const taskaccess = (req, res)=>{
+  
 
   var access_type = req.body.access_type.toString()
   console.log("access_type "+access_type)
@@ -209,34 +220,44 @@ const groupaccess = (req, res)=>{
     access_type = "Done"
     sqlAccess= "select app_permit_done as access from nodelogin.application where app_acronym ='"+app_acronym+"'"
   }
- 
+   console.log("Access type "+access_type)
+   console.log("Running query "+sqlAccess)
 
     con.query(sqlAccess, function (err, result) {
         if (err) throw err;
         
           console.log("Task id access for"+access_type+" is : "+result[0].access)
          
+          try {
           groupnamesStr="'"+result[0].access.toString().replaceAll(" ","','")+"'"
-          groupnamesStr=groupnamesStr.substring(3,groupnamesStr.length)
+         
        //   groupnamesStr="'"+groupnamesStr.toString().replaceAll("'',", "")
        // split result into array
          console.log("groupnamesStr "+groupnamesStr)
 
-       
+          } catch {
+            res.send("No access")
+          }
     
        /////////////////NAR BEI ANOTHER NESTED SQL
       // Step 2 get groupmembers in these groups 
        const sqlAccessMember = "select username as access from nodelogin.group_assign where groupname in ("+groupnamesStr+")"
-
+       console.log("Sql to check member is for access "+sqlAccessMember)
+       var userNames =""
        con.query(sqlAccessMember, function (err, result) {
+
+      
         if (err) throw err;
         
           console.log("Members in groups "+groupnamesStr +" query with "+sqlAccessMember)
          
           for ( var i=0; i<result.length; i++){
+            userNames = userNames+","+result[i].access
             console.log("Username :"+result[i].access)
                       
           }
+          console.log("Usernames found in "+groupnamesStr+ " is "+userNames)
+
           res.send(result)
        })
       
@@ -291,6 +312,8 @@ const updateTask = (req, res)=>{
        
         console.log("Run update task  "+sqlUpdateTask)
        });
+
+       sendEmail()
     }
  catch (err){
     console.log("Update task - Error updating app task")
@@ -299,7 +322,30 @@ const updateTask = (req, res)=>{
 
 }
 
+const sendEmail=()=>{
 
+  if (taskstate == "Done"){
+  var mailOptions = {
+    from: 'chernhaw21@outlook.sg',
+    to:'chernhaw@gmail.com',
+    subject: 'Task '+task_id+ ' is done',
+    text: 'Hi Lead,n\ Task '+task_id
+    +' is done and awaiting for your further action\n'
+    +' Thanks.\n'
+    +'\nRegards,'+
+    +'\nTMS'
+  };
+
+  transporter.SendEmail(mailOptions, function(error, info){
+    if (error) {
+      console.log("Error sending mail "+error)
+    } else {
+      console.log("Email sent"+info.response)
+    }
+    
+  });
+}
+}
 const createtask = (req, res)=>{
   console.log("request - create new task " + req.body);
 
@@ -346,6 +392,7 @@ const createtask = (req, res)=>{
      +"CURRENT_TIMESTAMP)"
      console.log("Creating new task sql "+sqlInsertTask)
 
+
      con.query(sqlInsertTask, function (err, result) {
         if (err) throw err;
 
@@ -370,6 +417,6 @@ const createtask = (req, res)=>{
     getAllTasksByApp,
     getTaskDetail,
     updateTask,
-    groupaccess
+    taskaccess
  
     }
