@@ -7,7 +7,7 @@ var transporter = nodemailer.createTransport({
   auth: {
 
     user: 'chernhaw21@outlook.sg',
-    pass: 'password'
+    pass: 'PsalmOne00'
 
   }
 });
@@ -103,10 +103,7 @@ const retrieveplan = (req, res)=>{
 
 const getTaskDetail = (req, res)=>{
   console.log("request - get task detail  " + req.body);
-  
-  
   const task_id = Object.values(req.body.task_id).toString().replaceAll(',','');
-
   const sql_get_task_detail = "select "+
   "task_id, "+
   "task_name, "+
@@ -133,8 +130,6 @@ const getTaskDetail = (req, res)=>{
       console.log("task_state :"+result[0].task_state)
       console.log("task_owner :"+result[0].task_owner)
       console.log("task_createDate :"+result[0].task_createDate)
-
-   
      res.send(result)
      });
     } catch (err){
@@ -194,8 +189,6 @@ const getAllTasksByApp = (req, res)=>{
 
 
 const taskaccess = (req, res)=>{
-  
-
   var access_type = req.body.access_type.toString()
   console.log("access_type "+access_type)
   var app_acronym = req.body.app_acronym.toString()
@@ -295,6 +288,10 @@ const updateTask = (req, res)=>{
   const taskId=Object.values(req.body.taskId).toString().replaceAll(',',''); 
   console.log("Task Id "+taskId)
 
+  var taskemail = ""
+
+ 
+  
 
   var sqlUpdateTask = "update nodelogin.task "
   + "set task_name='"+taskName
@@ -305,22 +302,34 @@ const updateTask = (req, res)=>{
   +"', task_owner = '"+taskOwner
   +"' where task_id ='"+taskId+"'"
 
-
   try {
-
     
     con.query(sqlUpdateTask, function (err, result) {
         if (err) throw err;
        
         console.log("Run update task  "+sqlUpdateTask)
 
+   
+        // send email to task lead when task is moved to Done
         if (taskstate == "Done"){
+           // Get email from task owner
+         var sqlGetEmail = "select a.email from nodelogin.accounts a inner join nodelogin.task b "+ 
+        "on a.username = b.task_creator where b.task_id= '"+taskId+"'"
+
+          try {
+    
+            con.query(sqlGetEmail, function (err, result) {
+                if (err) throw err;
+                console.log("Run update task  "+sqlUpdateTask)
+                taskemail=result[0].email
+
+                console.log("Sending to task is done to "+taskemail)
           var mailOptions = {
             from: 'chernhaw21@outlook.sg',
-            to:'chernhaw@gmail.com',
+            to:''+taskemail+'',
             subject: 'Task '+taskId+ ' is done',
             text: 'Hi Lead,\nTask '+taskId+' is done and awaiting for your further action.\n'
-            +'Thanks.\n'
+            +'Thanks.\n\n'
             +'Regards,\n'
             +'TMS'
           };
@@ -334,7 +343,18 @@ const updateTask = (req, res)=>{
               console.log("Email sent"+info.response)
             }
             
-          });}
+          });
+        
+
+
+
+               });}
+            catch (err){
+                  console.log("Update task - Error updating app task")
+                  console.log(err);
+          }
+          
+        }
 
        });
 
