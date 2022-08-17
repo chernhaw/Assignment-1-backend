@@ -82,6 +82,8 @@ const updateapp = (req, res)=>{
   
   const app_permit_doing = Object.values(req.body.app_permit_doing).toString().replaceAll(',','');
   const app_permit_done = Object.values(req.body.app_permit_done).toString().replaceAll(',','');
+
+
   try {
     app_rnumber = Object.values(req.body.app_rnumber).toString().replaceAll(',','');
   } catch (e){
@@ -101,7 +103,8 @@ try {
 
   app_start_date=app_start_date.substring(0,10)
  
-} catch (e){
+} catch (err){
+  console("Exception  in date "+err)
   app_start_date= null
 } 
 
@@ -109,7 +112,8 @@ try {
 try {
   app_end_date = Object.values(req.body.app_end_date).toString().replaceAll(',','');
   app_end_date = app_end_date.substring(0,10)
-} catch (e){
+} catch (err){
+  console("Exception  in date "+err)
   app_end_date= null
 } 
 
@@ -119,8 +123,7 @@ try {
   console.log("app_start_date : " +app_start_date)
   console.log("app_end_date : " +app_end_date)
 
-
-  const sql_app_update = "update nodelogin.application set app_rnumber='"+app_rnumber
+  var sql_app_update = "update nodelogin.application set app_rnumber='"+app_rnumber
   +"', app_description='"+app_description+
   "', app_startdate='"+app_start_date+
   "', app_enddate='"+app_end_date+
@@ -129,6 +132,57 @@ try {
   "', app_permit_doing='"+app_permit_doing+
   "', app_permit_done='"+app_permit_done+
   "' where app_acronym='"+app_acronym+"'";
+
+  var gotstartdate = true
+  var gotenddate = true
+
+  if (app_start_date==''){
+    console.log("no start date")
+    gotstartdate=false
+   }
+
+  if (app_end_date==''){
+   
+    console.log("no end date")
+    gotenddate=false
+
+  } 
+  
+  if (!gotstartdate && !gotenddate){
+    sql_app_update = "update nodelogin.application set app_rnumber='"+app_rnumber
+    +"', app_description='"+app_description+
+    
+    "', app_permit_open='"+app_permit_open+
+    "', app_permit_todolist='"+app_permit_todolist+
+    "', app_permit_doing='"+app_permit_doing+
+    "', app_permit_done='"+app_permit_done+
+    "' where app_acronym='"+app_acronym+"'";
+  }
+else if (!gotstartdate){
+     sql_app_update = "update nodelogin.application set app_rnumber='"+app_rnumber
+    +"', app_description='"+app_description+
+   
+    "', app_enddate='"+app_end_date+
+    "', app_permit_open='"+app_permit_open+
+    "', app_permit_todolist='"+app_permit_todolist+
+    "', app_permit_doing='"+app_permit_doing+
+    "', app_permit_done='"+app_permit_done+
+    "' where app_acronym='"+app_acronym+"'";
+  } else if (!gotenddate){
+    sql_app_update = "update nodelogin.application set app_rnumber='"+app_rnumber
+    +"', app_description='"+app_description+
+    "', app_startdate='"+app_start_date+
+    
+    "', app_permit_open='"+app_permit_open+
+    "', app_permit_todolist='"+app_permit_todolist+
+    "', app_permit_doing='"+app_permit_doing+
+    "', app_permit_done='"+app_permit_done+
+    "' where app_acronym='"+app_acronym+"'";
+  
+  }  
+    
+  
+  console.log(sql_app_update)
 
   try {
     con.query(sql_app_update, function (err, result) {

@@ -6,8 +6,8 @@ var transporter = nodemailer.createTransport({
   service: 'hotmail',
   auth: {
 
-    user: 'jesuslovesme@outlook.sg',
-    pass: 'yesjesuslovesme'
+    user: 'chernhaw21@outlook.sg',
+    pass: 'PsalmOne00'
 
   }
 });
@@ -161,6 +161,33 @@ const counttask = (req, res)=>{
       }
 }
 
+
+const getAllTasksByPlan = (req, res)=>{
+  const plan = Object.values(req.body.plan).toString().replaceAll(',','');
+  console.log("getting plan: "+plan)
+  const sqlGetPlanTasks = "select task_id, task_name, task_state from nodelogin.task where task_plan ='"+plan+"' order by task_state"
+  try {
+    console.log("sql query plan: "+sqlGetPlanTasks)
+    con.query(sqlGetPlanTasks, function (err, result) {
+        if (err) throw err;
+        
+       
+        for ( var i=0; i<result.length; i++){
+          console.log("Task id :"+result[i].task_id)
+          console.log("Task name :"+result[i].task_name)  
+          console.log("Task status :"+result[i].task_state)             
+          console.log("-----------------------------")
+       } 
+       res.send(result)
+   
+    })
+  } catch (err){
+    console.log("getting app task - Error checking")
+    console.log(err);
+  }
+
+}
+
 const getAllTasksByApp = (req, res)=>{
   const app_acronym = Object.values(req.body.app_acronym).toString().replaceAll(',','');
   console.log("getting app_acronym task : "+app_acronym)
@@ -296,7 +323,7 @@ const updateTask = (req, res)=>{
   var sqlUpdateTask = "update nodelogin.task "
   + "set task_name='"+taskName
   +"', task_description ='"+taskdescription
-
+  +"', task_plan ='"+taskplan
   +"', task_state = '"+taskstate
   +"', task_notes = '"+taskNotes
   +"', task_owner = '"+taskOwner
@@ -333,7 +360,7 @@ const updateTask = (req, res)=>{
             +'Regards,\n'
             +'TMS'
           };
-        
+           
         
           transporter.sendMail(mailOptions, function(error, info){
             console.log("Sending email: "+info)
@@ -462,6 +489,7 @@ const createtask = (req, res)=>{
     createtask,
     counttask,
     getAllTasksByApp,
+    getAllTasksByPlan,
     getTaskDetail,
     updateTask,
     taskaccess
