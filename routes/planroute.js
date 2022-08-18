@@ -8,5 +8,7 @@ planroute.post('/checkplan', planmgt.checkplan)
 planroute.post('/updateplan', planmgt.updateplan)
 planroute.post('/listplans', planmgt.listplans)
 planroute.post('/retrieveplan', planmgt.retrieveplan)
+planroute.post('/planassess', planmgt.planassess)
+planroute.post('/listappplan', planmgt.getappplan)
 
 module.exports = planroute;

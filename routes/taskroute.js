@@ -8,6 +8,7 @@ taskroute.post('/apptaskid', taskmgt.apptaskid)
 taskroute.post('/listapptasks', taskmgt.getAllTasksByApp)
 
 taskroute.post('/listplantasks', taskmgt.getAllTasksByPlan)
+
 taskroute.post('/gettaskdetail', taskmgt.getTaskDetail)
 taskroute.post('/taskaccess', taskmgt.taskaccess)
 taskroute.post('/updatetask', taskmgt.updateTask)
