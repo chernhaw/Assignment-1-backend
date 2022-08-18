@@ -214,6 +214,8 @@ const getAllTasksByApp = (req, res)=>{
 
 
 
+
+
 const taskaccess = (req, res)=>{
   console.log("Checking access ")
   
@@ -481,7 +483,7 @@ const createtask = (req, res)=>{
      "','"+taskdescription
      +"','"+test_id_str
      
-     + "','"+taskNotes
+     + "','"+taskNotes +"/n "
      +"','"+app_acronym+
      "','Open', '"
      +taskcreator

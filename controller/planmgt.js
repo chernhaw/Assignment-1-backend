@@ -165,11 +165,94 @@ const createplan = (req, res)=>{
         }
      //   res.send(res)
       }
+
+      const planassess = (req, res)=>{
+        console.log("Checking access for plan")
+        
+        var app_acronym = req.body.app_acronym.toString()
+        console.log("app_acronym "+app_acronym)
+      
+        sqlAccess= "select app_permit_todolist as access from nodelogin.application where app_acronym ='"+app_acronym+"'"
+      
+         console.log("Running query "+sqlAccess)
+      
+          con.query(sqlAccess, function (err, result) {
+              if (err) throw err;
+              
+                console.log("Plan access for"+access_type+" is : "+result[0].access)
+               
+                try {
+                groupnamesStr="'"+result[0].access.toString().replaceAll(" ","','")+"'"
+               
+             //   groupnamesStr="'"+groupnamesStr.toString().replaceAll("'',", "")
+             // split result into array
+               console.log("groupnamesStr "+groupnamesStr)
+      
+                } catch {
+                  res.send("No access")
+                }
+          
+             /////////////////NAR BEI ANOTHER NESTED SQL
+            // Step 2 get groupmembers in these groups 
+             const sqlAccessMember = "select username as access from nodelogin.group_assign where groupname in ("+groupnamesStr+")"
+             console.log("Sql to check member is for access "+sqlAccessMember)
+             var userNames =""
+             con.query(sqlAccessMember, function (err, result) {
+      
+            
+              if (err) throw err;
+              
+                console.log("Members in groups "+groupnamesStr +" query with "+sqlAccessMember)
+               
+                for ( var i=0; i<result.length; i++){
+                  userNames = userNames+","+result[i].access
+                  console.log("Username :"+result[i].access)
+                            
+                }
+                console.log("Usernames found in "+groupnamesStr+ " is "+userNames)
+      
+                res.send(result)
+             })
+            
+          }
+         
+          );
+         
+        }
      
+
+        const getappplan = (req, res)=>{
+
+          console.log("Extraction app plans")
+        
+          var app_acronym = req.body.app_acronym.toString()
+          console.log("app_acronym "+app_acronym)
+        
+          sqlAppPlan= "select plan_app_acronym  from nodelogin.plan where plan_app_acronym like '%"+app_acronym+"'"
+        
+           console.log("Running query "+sqlAppPlan)
+        
+            con.query(sqlAppPlan, function (err, result) {
+                if (err) throw err;
+                
+                for ( var i=0; i<result.length; i++){
+                  
+                  console.log("plan_app_acronym  :"+result[i].plan_app_acronym)
+                            
+                }
+                  
+                  res.send(result)
+             
+            }
+           
+            );
+
+        }
       
   module.exports= 
   {
-   
+    getappplan,
+    planassess,
     createplan,
     checkplan,
     listplans,
