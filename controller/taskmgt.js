@@ -96,10 +96,7 @@ const retrieveplan = (req, res)=>{
        res.send(rows)
     })
   }
-  
 
-  
-  
 
 const getTaskDetail = (req, res)=>{
   console.log("request - get task detail  " + req.body);
@@ -140,18 +137,20 @@ const getTaskDetail = (req, res)=>{
 
 
 
-const counttask = (req, res)=>{
-    const app_acronym = Object.values(req.body.app_acronym).toString().replaceAll(',','');
-    console.log("Create task for app "+app_acronym)
+const apptaskid = (req, res)=>{
+    var app_acronym = Object.values(req.body.app_acronym).toString().replaceAll(',','');
+    app_acronym=app_acronym+"_"
+    console.log("Get tasks for app "+app_acronym)
 
-    var sqlCountTaskApp = "select count(*) as taskcount from nodelogin.task where task_id like '"+app_acronym+"%'";
+    var sqlCountTaskApp = "select task_id from nodelogin.task where task_id like '"+app_acronym+"%' order by task_id";
 
   try {
+    console.log("sql "+ sqlCountTaskApp)
    
     con.query(sqlCountTaskApp, function (err, result) {
         if (err) throw err;
-        taskcount=result[0].taskcount 
-        console.log("Current task count in "+app_acronym+" is "+taskcount)
+        taskcount=result[0].taskid 
+        console.log("Current task id in "+app_acronym+" is "+taskcount)
         res.send(result)
         
      }); 
@@ -216,10 +215,12 @@ const getAllTasksByApp = (req, res)=>{
 
 
 const taskaccess = (req, res)=>{
-  var access_type = req.body.access_type.toString()
-  console.log("access_type "+access_type)
+  console.log("Checking access ")
+  
   var app_acronym = req.body.app_acronym.toString()
   console.log("app_acronym "+app_acronym)
+  var access_type = req.body.access_type.toString()
+  console.log("access_type "+access_type)
   // create query for application table
 
   var sqlAccess = ""
@@ -420,6 +421,8 @@ const updateTask = (req, res)=>{
 //   });
 // }
 // }
+
+
 const createtask = (req, res)=>{
   console.log("request - create new task " + req.body);
 
@@ -431,32 +434,52 @@ const createtask = (req, res)=>{
   console.log("Task description "+taskdescription)
   const taskName = Object.values(req.body.taskName).toString().replaceAll(',','');
   console.log("Taskname "+taskName)
-  const taskNotes=Object.values(req.body.taskNotes).toString().replaceAll(',',''); 
+  var taskNotes=Object.values(req.body.taskNotes).toString().replaceAll(',',''); 
   console.log("Task notes "+taskNotes)
+  if (taskNotes=="undefined"){
+    taskNotes=""
+  }
   const taskcreator=Object.values(req.body.taskCreator).toString().replaceAll(',',''); 
   console.log("Task creator "+taskcreator)
 
   // get current count of task for app
-  var sqlCountTaskApp = "select count(*) as taskcount from nodelogin.task where task_id like '"+app_acronym+"%'";
+  var sqlAllAppTask = "select task_id from nodelogin.task where task_id like '"+app_acronym+"_%'";
 
-  var taskcount = 0
-    
+   var last_taskid=0
+   var new_taskid=0
+  
     try {
-    con.query(sqlCountTaskApp, function (err, result) {
+    con.query(sqlAllAppTask, function (err, result) {
         if (err) throw err;
-        taskcount=parseInt (result[0].taskcount)  
-        console.log("Current task count in "+app_acronym+" is "+taskcount)
         
-        taskcount = taskcount+1
-    console.log("New task count in "+app_acronym+" is "+taskcount)
-     var task_id = ""+app_acronym+"_"+taskcount.toString()
-     console.log("new task count in string "+taskcount.toString())
-     console.log("Create new task id for task "+ task_id)
+        var length = result.length
+        console.log("result length for task " +length)
+      
+        last_taskid=result[length-1].task_id
+        console.log("last task id "+last_taskid )
+        
+        
+        last_taskidArr= last_taskid.split('_')
+
+        console.log(last_taskidArr)
+
+        var taskArrLght = last_taskidArr.length
+
+        
+        console.log("last digit "+ last_taskidArr[taskArrLght-1])
+
+        last_taskid = parseInt(last_taskidArr[taskArrLght-1])
+        new_taskid = last_taskid+1
+        console.log("new_taskid "+ new_taskid)
+
+        var test_id_str = app_acronym+"_"+new_taskid
+
+     
      var sqlInsertTask = "insert into nodelogin.task "+
      "(task_name, task_description, task_id, task_notes, task_app_acronym, task_state, task_creator, task_owner, task_createDate )"+
      " values ('"+taskName+
      "','"+taskdescription
-     +"','"+task_id
+     +"','"+test_id_str
      
      + "','"+taskNotes
      +"','"+app_acronym+
@@ -487,7 +510,7 @@ const createtask = (req, res)=>{
   {
    
     createtask,
-    counttask,
+    apptaskid,
     getAllTasksByApp,
     getAllTasksByPlan,
     getTaskDetail,
