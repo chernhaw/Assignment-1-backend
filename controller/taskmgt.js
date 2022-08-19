@@ -149,8 +149,8 @@ const apptaskid = (req, res)=>{
    
     con.query(sqlCountTaskApp, function (err, result) {
         if (err) throw err;
-        taskcount=result[0].taskid 
-        console.log("Current task id in "+app_acronym+" is "+taskcount)
+        
+       
         res.send(result)
         
      }); 
@@ -226,9 +226,12 @@ const taskaccess = (req, res)=>{
   // create query for application table
 
   var sqlAccess = ""
+  var groupnamesStr =""
 
   // Step 1 get group permit access in open/todo/doing/Done from appliaction table
-  if (access_type == "Open"){
+  if (access_type == "Create"){
+    sqlAccess= "select app_permit_create as access from nodelogin.application where app_acronym ='"+app_acronym+"'"
+  }else if (access_type == "Open"){
     sqlAccess= "select app_permit_open as access from nodelogin.application where app_acronym ='"+app_acronym+"'"
   } else if (access_type == "Todo"){
     sqlAccess= "select app_permit_todolist as access from nodelogin.application where app_acronym ='"+app_acronym+"'"
@@ -249,9 +252,11 @@ const taskaccess = (req, res)=>{
     con.query(sqlAccess, function (err, result) {
         if (err) throw err;
         
-          console.log("Task id access for"+access_type+" is : "+result[0].access)
+         
          
           try {
+
+          console.log("Task id access for"+access_type +" is : "+result[0].access)
           groupnamesStr="'"+result[0].access.toString().replaceAll(" ","','")+"'"
          
        //   groupnamesStr="'"+groupnamesStr.toString().replaceAll("'',", "")
@@ -264,6 +269,8 @@ const taskaccess = (req, res)=>{
     
        /////////////////NAR BEI ANOTHER NESTED SQL
       // Step 2 get groupmembers in these groups 
+
+      if (groupnamesStr!=""){
        const sqlAccessMember = "select username as access from nodelogin.group_assign where groupname in ("+groupnamesStr+")"
        console.log("Sql to check member is for access "+sqlAccessMember)
        var userNames =""
@@ -283,7 +290,7 @@ const taskaccess = (req, res)=>{
 
           res.send(result)
        })
-      
+      }
     }
    
     );
@@ -445,43 +452,85 @@ const createtask = (req, res)=>{
   console.log("Task creator "+taskcreator)
 
   // get current count of task for app
-  var sqlAllAppTask = "select task_id from nodelogin.task where task_id like '"+app_acronym+"_%'";
 
-   var last_taskid=0
-   var new_taskid=0
+  var last_taskid=0
+  var new_taskid=0
+
+  // set default task_id first
+  // 1 get rnumber from application
+
+  var sql_rnum = "select app_rnumber from nodelogin.application where app_acronym = '"+app_acronym+"'";
+
+  try {
+    con.query(sql_rnum, function (err, result) {
+      if (err) throw err;
+        result[0].app_rnumber
+        new_taskid = parseInt(result[0].app_rnumber)
+        new_taskid = app_acronym+"_"+new_taskid
+
+        console.log("app_rnumber for "+app_acronym+ " is " + last_taskid)
+    }
+    
+    )
+
   
-    try {
+  var sqlAllAppTask = "select task_id from nodelogin.task where task_id like '"+app_acronym+"_%'";
+  
+   
     con.query(sqlAllAppTask, function (err, result) {
         if (err) throw err;
         
         var length = result.length
         console.log("result length for task " +length)
+        var resultStr=''
+
+        for (var i=0; i<length; i++){
+          resultStr = resultStr+" "+result[i].task_id
+        }
+
+        console.log("resultStr " +resultStr)
+
+        var resultStrArray= resultStr.split(" "+app_acronym+"_")
+
+        
+
+        console.log("resultStrArray = " +resultStrArray)
+
+        console.log("resultStrArray[2] content " +resultStrArray[2])
+
+        resultStrArray.sort(function(a, b){return a - b});
+        console.log("resultStrArray after sorted = " +resultStrArray)
+
+        var arraylength = parseInt(resultStrArray.length)
+
+        console.log("resultStrArray length " +arraylength)
+        console.log("arraylength["+arraylength+"] = "+resultStrArray[arraylength-1] )
+
+       
       
-        last_taskid=result[length-1].task_id
-        console.log("last task id "+last_taskid )
-        
-        
-        last_taskidArr= last_taskid.split('_')
+       if (arraylength!=0 ){
+        new_taskid= parseInt(resultStrArray[arraylength-1])+1
+        console.log("new_taskid " + new_taskid)
+        var VAR =new_taskid.toString()
 
-        console.log(last_taskidArr)
+        console.log("VAR " + VAR)
+        if (VAR=="NaN"){
+          new_taskid= 1
+        }
+       } else {
+        new_taskid= 1
+        console.log("else new_taskid " + new_taskid)
+       }
+       new_taskid = app_acronym+"_"+new_taskid
+       
 
-        var taskArrLght = last_taskidArr.length
-
-        
-        console.log("last digit "+ last_taskidArr[taskArrLght-1])
-
-        last_taskid = parseInt(last_taskidArr[taskArrLght-1])
-        new_taskid = last_taskid+1
-        console.log("new_taskid "+ new_taskid)
-
-        var test_id_str = app_acronym+"_"+new_taskid
 
      
      var sqlInsertTask = "insert into nodelogin.task "+
      "(task_name, task_description, task_id, task_notes, task_app_acronym, task_state, task_creator, task_owner, task_createDate )"+
      " values ('"+taskName+
      "','"+taskdescription
-     +"','"+test_id_str
+     +"','"+new_taskid
      
      + "','"+taskNotes +"/n "
      +"','"+app_acronym+
@@ -498,15 +547,17 @@ const createtask = (req, res)=>{
         });
 
         
-     });
+     }
+     );
+  
     }
  catch (err){
-    console.log("checkExisting app - Error checking app count")
+    console.log("creating task app - Error ")
     console.log(err);
   }
     
       }
-     
+    
       
   module.exports= 
   {
