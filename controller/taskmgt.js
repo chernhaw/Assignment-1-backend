@@ -365,7 +365,7 @@ const updateTask = (req, res)=>{
             from: 'chernhaw21@outlook.sg',
             to:''+taskemail+'',
             subject: 'Task '+taskId+ ' is done',
-            text: 'Hi Lead,\nTask '+taskId+' is done and awaiting for your further action.\n'
+            text: 'Hi Lead,\nTask '+taskId+' is completed by '+taskOwner+ ' and awaiting for your further action.\n'
             +'Thanks.\n\n'
             +'Regards,\n'
             +'TMS'
@@ -455,6 +455,7 @@ const createtask = (req, res)=>{
 
   var last_taskid=0
   var new_taskid=0
+  var rnum=0
 
   // set default task_id first
   // 1 get rnumber from application
@@ -465,10 +466,10 @@ const createtask = (req, res)=>{
     con.query(sql_rnum, function (err, result) {
       if (err) throw err;
         result[0].app_rnumber
-        new_taskid = parseInt(result[0].app_rnumber)
-        new_taskid = app_acronym+"_"+new_taskid
+        rnum = parseInt(result[0].app_rnumber)
+       
 
-        console.log("app_rnumber for "+app_acronym+ " is " + last_taskid)
+        console.log("app_rnumber for "+app_acronym+ " is " + rnum)
     }
     
     )
@@ -515,7 +516,7 @@ const createtask = (req, res)=>{
 
         console.log("VAR " + VAR)
         if (VAR=="NaN"){
-          new_taskid= 1
+          new_taskid= rnum
         }
        } else {
         new_taskid= 1
