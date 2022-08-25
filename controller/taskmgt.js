@@ -463,70 +463,20 @@ const createtask = (req, res)=>{
   var sql_rnum = "select app_rnumber from nodelogin.application where app_acronym = '"+app_acronym+"'";
 
   try {
-    con.query(sql_rnum, function (err, result) {
-      if (err) throw err;
-        result[0].app_rnumber
-        rnum = parseInt(result[0].app_rnumber)
-       
-
-        console.log("app_rnumber for "+app_acronym+ " is " + rnum)
-    }
-    
-    )
-
-  
-  var sqlAllAppTask = "select task_id from nodelogin.task where task_id like '"+app_acronym+"_%'";
-  
    
-    con.query(sqlAllAppTask, function (err, result) {
+    console.log("sql "+ sql_rnum)
+   
+    con.query(sql_rnum, function (err, result) {
         if (err) throw err;
         
-        var length = result.length
-        console.log("result length for task " +length)
-        var resultStr=''
+       rnum = parseInt(result[0].app_rnumber)
 
-        for (var i=0; i<length; i++){
-          resultStr = resultStr+" "+result[i].task_id
-        }
+      console.log("current r_num " +rnum)
 
-        console.log("resultStr " +resultStr)
-
-        var resultStrArray= resultStr.split(" "+app_acronym+"_")
-
-        
-
-        console.log("resultStrArray = " +resultStrArray)
-
-        console.log("resultStrArray[2] content " +resultStrArray[2])
-
-        resultStrArray.sort(function(a, b){return a - b});
-        console.log("resultStrArray after sorted = " +resultStrArray)
-
-        var arraylength = parseInt(resultStrArray.length)
-
-        console.log("resultStrArray length " +arraylength)
-        console.log("arraylength["+arraylength+"] = "+resultStrArray[arraylength-1] )
-
-       
-      
-       if (arraylength!=0 ){
-        new_taskid= parseInt(resultStrArray[arraylength-1])+1
-        console.log("new_taskid " + new_taskid)
-        var VAR =new_taskid.toString()
-
-        console.log("VAR " + VAR)
-        if (VAR=="NaN"){
-          new_taskid= rnum
-        }
-       } else {
-        new_taskid= 1
-        console.log("else new_taskid " + new_taskid)
-       }
+       var new_taskid = rnum
+   
        new_taskid = app_acronym+"_"+new_taskid
        
-
-
-     
      var sqlInsertTask = "insert into nodelogin.task "+
      "(task_name, task_description, task_id, task_notes, task_app_acronym, task_state, task_creator, task_owner, task_createDate )"+
      " values ('"+taskName+
@@ -544,16 +494,38 @@ const createtask = (req, res)=>{
 
      con.query(sqlInsertTask, function (err, result) {
         if (err) throw err;
-
+        console.log(result)
+        res.send(result)
         });
+     })
 
-        
-     }
-     );
+
+     rnum=rnum+1
+     var sql_updaternum = "update to nodelogin.applications set rnum='"+rnum+"' where app_acronym = '"+app_acronym+"'";
+
+     con.query(sql_updaternum, function (err, result) {
+      if (err) throw err;
+      console.log(result)
+        res.send(result)
+   })
+
+    //  var sqlTask = "select task_id from nodelogin.task where task_id ='"+new_taskid+"'"
+
+    //  con.query(sqlTask, function (err, result1) {
+    //   if (err) throw err;
+
+    //   console.log("Result "+result1)
+
+    //   res.send("Result "+result1)
+    //   });
+   
+   
+     
+
   
-    }
- catch (err){
-    console.log("creating task app - Error ")
+    
+    } catch (err){
+    console.log("creating task - Error ")
     console.log(err);
   }
     
