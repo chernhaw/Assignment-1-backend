@@ -275,6 +275,7 @@ const activate = (req, res)=>{
   }
 
 
+
   
   //  const sqlListGroup = "select groupname from group where groupname like '%"+groupname+"%'";
   const listusers =(req, res)=>{
@@ -317,6 +318,72 @@ const listlistenabledusers =(req, res)=>{
   }
 }
 
+const removeLead = (req, res)=>{
+
+  var groupname = Object.values(req.body.groupname).toString().replaceAll(',','');
+  groupname = groupname.replaceAll(' ', '')
+  grouprole ='LEAD'
+  try {
+   
+    //   listuserssql = "select username as value, username as label from nodelogin.accounts"
+    var updateLeadsql ="delete from nodelogin.grouprole where rolename='"+grouprole+"' and groupname='"+groupname+"'"
+       console.log(updateLeadsql)
+      con.query(updateLeadsql,
+      function(err, rows){
+          if(err) throw err;
+          console.log(rows);
+          res.send(rows);
+      });
+     } catch (err){
+      console.log(err);
+     }
+
+}
+ 
+
+const removePM = (req, res)=>{
+
+  var groupname = Object.values(req.body.groupname).toString().replaceAll(',','');
+  groupname = groupname.replaceAll(' ', '')
+  grouprole ='PM'
+  try {
+   
+    //   listuserssql = "select username as value, username as label from nodelogin.accounts"
+    var updateLeadsql ="delete from nodelogin.grouprole where rolename='"+grouprole+"' and groupname='"+groupname+"'"
+       console.log(updateLeadsql)
+      con.query(updateLeadsql,
+      function(err, rows){
+          if(err) throw err;
+          console.log(rows);
+          res.send(rows);
+      });
+     } catch (err){
+      console.log(err);
+     }
+
+}
+
+const removeAppLead = (req, res)=>{
+
+  var groupname = Object.values(req.body.groupname).toString().replaceAll(',','');
+  groupname = groupname.replaceAll(' ', '')
+  grouprole ='APP LEAD'
+  try {
+   
+    //   listuserssql = "select username as value, username as label from nodelogin.accounts"
+    var updateLeadsql ="delete from nodelogin.grouprole where rolename='"+grouprole+"' and groupname='"+groupname+"'"
+       console.log(updateLeadsql)
+      con.query(updateLeadsql,
+      function(err, rows){
+          if(err) throw err;
+          console.log(rows);
+          res.send(rows);
+      });
+     } catch (err){
+      console.log(err);
+     }
+
+}
 // userroute.post('/updateLead', usermgt.updateLead)
 const updateLead = (req, res)=>{
   var groupname = Object.values(req.body.groupnames).toString().replaceAll(',','');
@@ -1077,4 +1144,7 @@ const groupassign = (req, res) => {
     listdisabledusers,
     updateAppLead,
     updateLead,
-    updatePM}
+    updatePM,
+    removeLead,
+    removePM,
+    removeAppLead}
