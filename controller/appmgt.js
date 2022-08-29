@@ -393,9 +393,6 @@ try {
             +app_permit_done+"','"
             +app_start_date+"','"
             +app_end_date+"')"
-        
-           
-        
        
       }
         

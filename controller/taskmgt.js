@@ -382,9 +382,6 @@ const updateTask = (req, res)=>{
             
           });
         
-
-
-
                });}
             catch (err){
                   console.log("Update task - Error updating app task")

@@ -296,7 +296,9 @@ const activate = (req, res)=>{
      }
    }
 
-const  listlistenabledusers =(req, res)=>{
+
+
+const listlistenabledusers =(req, res)=>{
   
   console.log("request - extracting active user list " + req.body);
   try {
@@ -305,6 +307,144 @@ const  listlistenabledusers =(req, res)=>{
     listuserssql = "select username from nodelogin.accounts where active ='Y'"
     console.log("Get list of users query" +listuserssql);
    con.query(listuserssql,
+   function(err, rows){
+       if(err) throw err;
+       console.log(rows);
+       res.send(rows);
+   });
+  } catch (err){
+   console.log(err);
+  }
+}
+
+// userroute.post('/updateLead', usermgt.updateLead)
+const updateLead = (req, res)=>{
+  var groupname = Object.values(req.body.groupnames).toString().replaceAll(',','');
+  groupname = groupname.replaceAll(' ', '')
+  grouprole ='LEAD'
+  try {
+   
+    //   listuserssql = "select username as value, username as label from nodelogin.accounts"
+    var updateLeadsql ="insert into nodelogin.grouprole (  rolename, groupname ) values ('"+grouprole+"','"+groupname+"')"
+       console.log(updateLeadsql)
+      con.query(updateLeadsql,
+      function(err, rows){
+          if(err) throw err;
+          console.log(rows);
+          res.send(rows);
+      });
+     } catch (err){
+      console.log(err);
+     }
+
+}
+const listLeadgroups = (req, res)=>{
+
+  console.log("request - extracting active user list " + req.body);
+  try {
+   
+ //   listuserssql = "select username as value, username as label from nodelogin.accounts"
+    const listLeadsql = "select groupname from nodelogin.grouprole where rolename='LEAD'"
+    console.log("Get list of groups in grouprole " +listLeadsql);
+   con.query(listLeadsql,
+   function(err, rows){
+       if(err) throw err;
+       console.log(rows);
+       res.send(rows);
+   });
+  } catch (err){
+   console.log(err);
+  }
+
+}
+
+
+const listAppLeadgroups =(req, res)=>{
+
+  console.log("request - extracting active user list " + req.body);
+  try {
+   
+ //   listuserssql = "select username as value, username as label from nodelogin.accounts"
+    const listLeadsql = "select groupname from nodelogin.grouprole where rolename='APP LEAD'"
+    console.log("Get list of groups in grouprole " +listLeadsql);
+   con.query(listLeadsql,
+   function(err, rows){
+       if(err) throw err;
+       console.log(rows);
+       res.send(rows);
+   });
+  } catch (err){
+   console.log(err);
+  }
+
+}
+
+
+// userroute.post('/updateApplead', usermgt.updateAppLead)
+// userroute.post('/updateLead', usermgt.updateLead)
+// userroute.post('/updatePM', usermgt.updatePM)
+
+//userroute.post('/updateApplead', usermgt.updateAppLead)
+
+
+
+
+const updateAppLead =(req,res)=>{
+
+  var groupname = Object.values(req.body.groupname).toString().replaceAll(',','');
+  
+  try {
+   
+    grouprole ='APP LEAD'
+    //   listuserssql = "select username as value, username as label from nodelogin.accounts"
+    var updateLeadsql ="insert into nodelogin.grouprole (  rolename, groupname ) values ('"+grouprole+"','"+groupname+"')"
+    console.log(updateLeadsql)
+      con.query(updateLeadsql,
+      function(err, rows){
+          if(err) throw err;
+          console.log(rows);
+          res.send(rows);
+      });
+     } catch (err){
+      console.log(err);
+     }
+
+}
+
+
+// userroute.post('/updatePM', usermgt.updatePM)
+
+
+const updatePM =(req,res)=>{
+
+  const groupname = Object.values(req.body.groupname).toString().replaceAll(',','');
+
+  grouprole ='PM'
+  try {
+       const updatePMsql = "insert into nodelogin.grouprole (  rolename, groupname ) values ('"+grouprole+"','"+groupname+"')"
+       console.log(updatePMsql)
+      con.query(updatePMsql,
+      function(err, rows){
+          if(err) throw err;
+          console.log(rows);
+          res.send(rows);
+      });
+     } catch (err){
+      console.log(err);
+     }
+
+
+}
+
+const listPMgroups =(req, res)=>{
+  
+  console.log("request - extracting active user list " + req.body);
+  try {
+   
+ //   listuserssql = "select username as value, username as label from nodelogin.accounts"
+    const listPMsql = "select groupname from nodelogin.grouprole where rolename='PM'"
+    console.log("Get list of groups in grouprole " +listPMsql);
+   con.query(listPMsql,
    function(err, rows){
        if(err) throw err;
        console.log(rows);
@@ -346,7 +486,7 @@ const  listlistenabledusers =(req, res)=>{
       listgroupsql = "select groupname from nodelogin.group"
     }
      
-     console.log("Get list of groups query" +listgroupsql);
+     console.log("Get list of groups query : " +listgroupsql);
      con.query(listgroupsql ,
      function(err, rows){
          if(err) throw err;
@@ -854,12 +994,6 @@ const groupassign = (req, res) => {
     
          
     
-        
-       
-      
-      
-    
-    
     //app.post('/userexist', function(req, res){
     const userexist =  (req, res) => {
        const username = Object.values(req.body.username).toString().replaceAll(',','');
@@ -904,6 +1038,10 @@ const groupassign = (req, res) => {
     
     }
     
+    // userroute.post('/updateApplead', usermgt.updateAppLead)
+// userroute.post('/updateLead', usermgt.updateLead)
+// userroute.post('/updatePM', usermgt.updatePM)
+
 
   module.exports= 
   {activate,
@@ -927,8 +1065,16 @@ const groupassign = (req, res) => {
     adminassign,
     adminunassign,
     groupedit,
+    listPMgroups,
+ 
+    listLeadgroups,
    
+    listAppLeadgroups,
+ 
     listadminusers,
     listusers,
     listlistenabledusers,
-    listdisabledusers}
+    listdisabledusers,
+    updateAppLead,
+    updateLead,
+    updatePM}
