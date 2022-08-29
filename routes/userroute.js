@@ -26,6 +26,18 @@ userroute.post('/userexist', usermgt.userexist)
 userroute.post('/groupremove', usermgt.groupremove)
 
 userroute.post('/listgroup', usermgt.listgroup)
+userroute.post('/listApplead', usermgt.listAppLeadgroups)
+userroute.post('/listLead', usermgt.listLeadgroups)
+userroute.post('/listPM', usermgt.listPMgroups)
+
+userroute.post('/updateApplead', usermgt.updateAppLead)
+userroute.post('/updateLead', usermgt.updateLead)
+userroute.post('/updatePM', usermgt.updatePM)
+
+userroute.post('/removeApplead', usermgt.removeAppLead)
+userroute.post('/removeLead', usermgt.removeLead)
+userroute.post('/removePM', usermgt.removePM)
+
 userroute.post('/listusers', usermgt.listusers)
 userroute.get('/listadminusers', usermgt.listadminusers)
 userroute.post('/checkgroup', usermgt.checkgroup)
