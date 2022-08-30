@@ -7,7 +7,7 @@ approute.post('/createapp', appmgt.createapp)
 approute.post('/checkapp', appmgt.checkapp)
 approute.post('/listapp', appmgt.listapp)
 approute.post('/updateapp', appmgt.updateapp)
-
+approute.post('/appaccess', appmgt.checkaccess)
 //listlistenabledusers
 //listdisabledusers
 module.exports = approute;
