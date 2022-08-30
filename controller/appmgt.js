@@ -26,10 +26,14 @@ const env = require('dotenv')
   console.log("check app "+ sql_list_app);
   con.query(sql_list_app,
   function(err, rows){
-
+      try{
       if(err) throw err;
-      console.log(rows[1].app_acronym)
+      console.log(rows[0].app_acronym)
       res.send(rows)
+
+      } catch (err){
+        console(err)
+      }
   })
 }
 
@@ -73,8 +77,76 @@ const env = require('dotenv')
 }
 
 
-const checkappexist =(req, res)=>{
-}
+const checkaccess =(req, res)=>{
+  // get a list of user with APP LEAD Access
+
+  // query the grouprole table for members with APP LEAD grouprole
+
+  const sql_count= "select count(*) as size FROM nodelogin.grouprole WHERE roleNAME= 'APP LEAD'"
+  var groupnamesStr="'"
+  con.query(sql_count, function (err, result) {
+    if (err) throw err;
+      try {
+      
+       console.log("No of groups in APP LEAD : " +result[0].size)
+       var size = parseInt(result[0].size)
+
+       ////// get group
+       const sql_group= "select groupname from nodelogin.grouprole WHERE roleNAME= 'APP LEAD'"
+
+       con.query(sql_group, function (err, result) {
+
+          for (var i =0; i<size; i++){
+            console.log(result[i].groupname)
+            groupnamesStr = groupnamesStr +""+result[i].groupname+"','"
+          }
+
+          var length = groupnamesStr.length
+          var end = length - 2
+
+          console.log("end "+end)
+          groupnamesStr=groupnamesStr.substring(0, end)
+          console.log("Group String "+groupnamesStr)
+
+          // get group members
+
+          const sql_group= "select username from nodelogin.group_assign WHERE groupname= "+groupnamesStr
+
+          con.query(sql_group, function (err, result) {
+
+            console.log("size of result "+result.length)
+            var length = parseInt(result.length)
+
+            for (var i=0; i< length; i++){
+              console.log("users : "+result[i].username)
+            }
+           
+            res.send(result)
+          })
+
+
+        })
+          
+
+
+      
+
+       
+      
+
+      } catch (err){
+        console.log("error "+err)
+      }
+  }
+  );
+
+
+       
+   
+  }
+
+ 
+
 
 const updateapp = (req, res)=>{
   console.log("request - update app  " + req.body);
@@ -124,6 +196,8 @@ try {
   app_end_date= null
 } 
 
+
+
   console.log("app_acronym : " +app_acronym)
   console.log("app_rnumber : " +app_rnumber)
   console.log("app_description : " +app_description)
@@ -150,6 +224,19 @@ try {
    }
 
   if (app_end_date==''){
+   
+    console.log("no end date")
+    gotenddate=false
+
+  } 
+  
+
+  if (app_start_date=='not set'){
+    console.log("no start date")
+    gotstartdate=false
+   }
+
+  if (app_end_date=='not set'){
    
     console.log("no end date")
     gotenddate=false
@@ -422,5 +509,6 @@ try {
     createapp,
     checkapp,
     listapp,
-    updateapp
+    updateapp,
+    checkaccess,
     }

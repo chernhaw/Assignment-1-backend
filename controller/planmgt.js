@@ -129,11 +129,26 @@ const createplan = (req, res)=>{
   } catch (e){
     plan_start_date= null
   } 
+
+     if (plan_start_date==''){
+          console.log("no start date")
+          gotstartdate=false
+         }
+      
+        if (plan_start_date==''){
+         
+          console.log("no end date")
+          gotenddate=false
+      
+        } 
+        
   
   try {
     plan_end_date = Object.values(req.body.plan_end_date).toString().replaceAll(',','');
   } catch (e){
     plan_end_date= null
+
+
   } 
  
  const plan_app_acronym=""+plan_mvp_name+app_acronym+""
@@ -147,13 +162,37 @@ const createplan = (req, res)=>{
 
   console.log("plan_app_acronym : " +plan_app_acronym)
  
+  var sqlInsertPlan=""
 
+        
+
+       
   
-        var sqlInsertPlan = "insert into nodelogin.plan "+
-        "(plan_mvp_name, plan_startdate, plan_enddate, plan_app_acronym )"+
-        " values ('"+plan_mvp_name+"','"+plan_start_date+"','"+plan_end_date+"','"+plan_app_acronym+"')"
-        console.log(sqlInsertPlan)
+        if (!plan_end_date && !plan_start_date){
+         sqlInsertPlan = "insert into nodelogin.plan "+
+        "(plan_mvp_name,  plan_app_acronym )"+
+        " values ('"+plan_mvp_name+"','"+plan_app_acronym+"')"
+        } else  if (plan_end_date==''){
+          sqlInsertPlan = "insert into nodelogin.plan "+
+        "(plan_mvp_name, plan_startdate, plan_app_acronym )"+
+        " values ('"+plan_mvp_name+"','"+plan_start_date+"','"+plan_app_acronym+"')"
+       
+         
+        } else if (plan_start_date==''){
+          sqlInsertPlan = "insert into nodelogin.plan "+
+          "(plan_mvp_name,  plan_enddate, plan_app_acronym )"+
+          " values ('"+plan_mvp_name+"','"+plan_end_date+"','"+plan_app_acronym+"')"
+          
+        } else {
 
+          sqlInsertPlan = "insert into nodelogin.plan "+
+          "(plan_mvp_name, plan_startdate, plan_enddate, plan_app_acronym )"+
+          " values ('"+plan_mvp_name+"','"+plan_start_date+"','"+plan_end_date+"','"+plan_app_acronym+"')"
+        }
+
+
+
+        console.log(sqlInsertPlan)
         try {
         con.query(sqlInsertPlan, function (err, result) {
          if (err) throw err;

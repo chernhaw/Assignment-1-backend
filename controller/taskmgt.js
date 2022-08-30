@@ -6,8 +6,8 @@ var transporter = nodemailer.createTransport({
   service: 'hotmail',
   auth: {
 
-    user: 'chernhaw21@outlook.sg',
-    pass: 'PsalmOne00'
+    user: 'chernhaw@hotmail.com',
+    pass: 'Psalm31:1'
 
   }
 });
@@ -362,7 +362,7 @@ const updateTask = (req, res)=>{
 
                 console.log("Sending to task is done to "+taskemail)
           var mailOptions = {
-            from: 'chernhaw21@outlook.sg',
+            from: 'chernhaw@hotmail.com',
             to:''+taskemail+'',
             subject: 'Task '+taskId+ ' is done',
             text: 'Hi Lead,\nTask '+taskId+' is completed by '+taskOwner+ ' and awaiting for your further action.\n'
@@ -440,13 +440,17 @@ const createtask = (req, res)=>{
   console.log("Task description "+taskdescription)
   const taskName = Object.values(req.body.taskName).toString().replaceAll(',','');
   console.log("Taskname "+taskName)
-  var taskNotes=Object.values(req.body.taskNotes).toString().replaceAll(',',''); 
+  var taskNotes=Object.values(req.body.taskNotes).toString().replaceAll(',','');
+  const taskcreator=Object.values(req.body.taskCreator).toString().replaceAll(',',''); 
+  console.log("Task creator "+taskcreator) 
   console.log("Task notes "+taskNotes)
   if (taskNotes=="undefined"){
-    taskNotes=""
+    taskNotes="\n\n----------\nUser:"+taskcreator+", Current State: Open, Date and Time:"+Date()+"\n"
+  }  else {
+   
+    taskNotes = taskNotes+"\n\n----------\nUser:"+taskcreator+", Current State: Open, Date and Time:"+Date()+"\n"
   }
-  const taskcreator=Object.values(req.body.taskCreator).toString().replaceAll(',',''); 
-  console.log("Task creator "+taskcreator)
+  
 
   // get current count of task for app
 
@@ -473,6 +477,8 @@ const createtask = (req, res)=>{
        var new_taskid = rnum
    
        new_taskid = app_acronym+"_"+new_taskid
+
+      
        
      var sqlInsertTask = "insert into nodelogin.task "+
      "(task_name, task_description, task_id, task_notes, task_app_acronym, task_state, task_creator, task_owner, task_createDate )"+
@@ -488,23 +494,35 @@ const createtask = (req, res)=>{
      +"CURRENT_TIMESTAMP)"
      console.log("Creating new task sql "+sqlInsertTask)
 
-
-     con.query(sqlInsertTask, function (err, result) {
-        if (err) throw err;
-        console.log(result)
-        res.send(result)
-        });
-     })
-
-
      rnum=rnum+1
-     var sql_updaternum = "update to nodelogin.applications set rnum='"+rnum+"' where app_acronym = '"+app_acronym+"'";
+     var sql_updaternum = "update nodelogin.application set app_rnumber='"+rnum+"' where app_acronym = '"+app_acronym+"'";
 
      con.query(sql_updaternum, function (err, result) {
       if (err) throw err;
       console.log(result)
         res.send(result)
    })
+
+     con.query(sqlInsertTask, function (err, result) {
+
+      try { 
+        if (err) throw err;
+        res.send(result)
+      } catch(err){
+        console.log(err)
+      }
+       
+        
+        
+        
+
+
+       
+        });
+     })
+
+
+    
 
     //  var sqlTask = "select task_id from nodelogin.task where task_id ='"+new_taskid+"'"
 
