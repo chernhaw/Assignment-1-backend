@@ -8,7 +8,8 @@ planroute.post('/checkplan', planmgt.checkplan)
 planroute.post('/updateplan', planmgt.updateplan)
 planroute.post('/listplans', planmgt.listplans)
 planroute.post('/retrieveplan', planmgt.retrieveplan)
-planroute.post('/planassess', planmgt.planassess)
+planroute.post('/planaccess', planmgt.planaccess)
 planroute.post('/listappplan', planmgt.getappplan)
-
+//http://localhost:8080/planaccess
 module.exports = planroute;
+
