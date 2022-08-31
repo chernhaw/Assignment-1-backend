@@ -48,7 +48,7 @@ const env = require('dotenv')
   }catch (err){
     console.log("There is an error "+err)
   }
-  const sql_check_app = "select app_acronym, app_description, app_rnumber, app_startdate, app_enddate, app_permit_open, app_permit_todolist, app_permit_doing, app_permit_done from nodelogin.application where app_acronym='"+app_acronym+"'";
+  const sql_check_app = "select app_acronym, app_description, app_rnumber, app_startdate, app_enddate, app_permit_open, app_permit_todolist, app_permit_doing, app_permit_done, app_permit_create from nodelogin.application where app_acronym='"+app_acronym+"'";
 
   console.log("check app "+ sql_check_app);
   con.query(sql_check_app,
@@ -64,6 +64,7 @@ const env = require('dotenv')
       console.log("app permit_todolist "+ rows[0].app_permit_todolist);
       console.log("app permit_doing "+ rows[0].app_permit_doing);
       console.log("app permit_done "+ rows[0].app_permit_done);
+      console.log("app permit_create "+ rows[0].app_permit_create);
 
      
 
@@ -78,42 +79,24 @@ const env = require('dotenv')
 
 
 const checkaccess =(req, res)=>{
-  // get a list of user with APP LEAD Access
+ 
 
-  // query the grouprole table for members with APP LEAD grouprole
+  role = Object.values(req.body.role).toString().replaceAll(',','');
 
-  const sql_count= "select count(*) as size FROM nodelogin.grouprole WHERE roleNAME= 'APP LEAD'"
-  var groupnamesStr="'"
-  con.query(sql_count, function (err, result) {
+  var sql=""
+  if (role=="Lead"){
+    sql= "select username FROM nodelogin.group_role WHERE groupname= 'Lead'"
+  } else if (role=="AppLead"){
+    sql= "select username FROM nodelogin.group_role WHERE groupname= 'AppLead'"
+  }if (role=="PM"){
+    sql= "select username FROM nodelogin.group_role WHERE groupname= 'PM'"
+  }
+   
+  
+  con.query(sql, function (err, result) {
     if (err) throw err;
       try {
       
-       console.log("No of groups in APP LEAD : " +result[0].size)
-       var size = parseInt(result[0].size)
-
-       ////// get group
-       const sql_group= "select groupname from nodelogin.grouprole WHERE roleNAME= 'APP LEAD'"
-
-       con.query(sql_group, function (err, result) {
-
-          for (var i =0; i<size; i++){
-            console.log(result[i].groupname)
-            groupnamesStr = groupnamesStr +""+result[i].groupname+"','"
-          }
-
-          var length = groupnamesStr.length
-          var end = length - 2
-
-          console.log("end "+end)
-          groupnamesStr=groupnamesStr.substring(0, end)
-          console.log("Group String "+groupnamesStr)
-
-          // get group members
-
-          const sql_group= "select username from nodelogin.group_assign WHERE groupname= "+groupnamesStr
-
-          con.query(sql_group, function (err, result) {
-
             console.log("size of result "+result.length)
             var length = parseInt(result.length)
 
@@ -122,7 +105,9 @@ const checkaccess =(req, res)=>{
             }
            
             res.send(result)
-          })
+          } catch (err){
+
+          }
 
 
         })
@@ -131,18 +116,6 @@ const checkaccess =(req, res)=>{
 
       
 
-       
-      
-
-      } catch (err){
-        console.log("error "+err)
-      }
-  }
-  );
-
-
-       
-   
   }
 
  
@@ -163,24 +136,20 @@ const updateapp = (req, res)=>{
   const app_permit_done = Object.values(req.body.app_permit_done).toString().replaceAll(',','');
   const app_permit_create = Object.values(req.body.app_permit_create).toString().replaceAll(',','');
 
-  try {
+  
     app_rnumber = Object.values(req.body.app_rnumber).toString().replaceAll(',','');
-  } catch (e){
-    app_rumber= null
-  }
+ 
  // app_rnumber = Object.values(req.body.app_rnumber).toString().replaceAll(',','');
- try {
-  app_description = Object.values(req.body.app_rnumber).toString().replaceAll(',','');
-} catch (e){
-  app_description= null
-} 
+
+  app_description = Object.values(req.body.app_description).toString().replaceAll(',','');
+
  
 try {
 
   //app_start_date.split('T')[0]
-  app_start_date = Object.values(req.body.app_start_date).toString().replaceAll(',','');
+  app_start_date = req.body.app_start_date;
 
-  app_start_date=app_start_date.substring(0,10)
+ 
  
 } catch (err){
   console("Exception  in date "+err)
@@ -189,8 +158,8 @@ try {
 
 
 try {
-  app_end_date = Object.values(req.body.app_end_date).toString().replaceAll(',','');
-  app_end_date = app_end_date.substring(0,10)
+  app_end_date = req.body.app_end_date;
+  
 } catch (err){
   console("Exception  in date "+err)
   app_end_date= null
@@ -251,6 +220,7 @@ try {
     "', app_permit_todolist='"+app_permit_todolist+
     "', app_permit_doing='"+app_permit_doing+
     "', app_permit_done='"+app_permit_done+
+    "', app_permit_create='"+app_permit_create+
     "' where app_acronym='"+app_acronym+"'";
   }
 else if (!gotstartdate){
@@ -262,6 +232,7 @@ else if (!gotstartdate){
     "', app_permit_todolist='"+app_permit_todolist+
     "', app_permit_doing='"+app_permit_doing+
     "', app_permit_done='"+app_permit_done+
+    "', app_permit_create='"+app_permit_create+
     "' where app_acronym='"+app_acronym+"'";
   } else if (!gotenddate){
     sql_app_update = "update nodelogin.application set app_rnumber='"+app_rnumber
@@ -272,6 +243,7 @@ else if (!gotstartdate){
     "', app_permit_todolist='"+app_permit_todolist+
     "', app_permit_doing='"+app_permit_doing+
     "', app_permit_done='"+app_permit_done+
+    "', app_permit_create='"+app_permit_create+
     "' where app_acronym='"+app_acronym+"'";
   
   }  
@@ -292,34 +264,26 @@ else if (!gotstartdate){
 
   const createapp = (req, res)=>{
   console.log("request - create new app " + req.body);
-  const app_acronym = Object.values(req.body.app_acronym).toString().replaceAll(',','');
-  const app_rnumber = Object.values(req.body.app_rnumber).toString().replaceAll(',','');
-  const app_description = Object.values(req.body.app_description).toString().replaceAll(',','');
- // var app_start_date = Object.values(req.body.app_start_date).toString().replaceAll(',','');
+  const app_acronym = req.body.app_acronym;
+  const app_rnumber = req.body.app_rnumber;
+  const app_description = req.body.app_description;
+  // var app_start_date = Object.values(req.body.app_start_date).toString().replaceAll(',','');
   //var app_end_date = Object.values(req.body.app_start_date).toString().replaceAll(',','');
   
-  const app_permit_open = Object.values(req.body.app_permit_open).toString().replaceAll(',','');
-  const app_permit_todolist = Object.values(req.body.app_permit_todolist).toString().replaceAll(',','');
+
+  const app_start_date = req.body.app_start_date
+  const app_end_date = req.body.app_end_date
+  const app_permit_open = req.body.app_permit_open
+  const app_permit_todolist = req.body.app_permit_todolist
  // const app_permit_create = Object.values(req.body.app_permit_create).toString().replaceAll(',','');
-  const app_permit_doing = Object.values(req.body.app_permit_doing).toString().replaceAll(',','');
-  const app_permit_done = Object.values(req.body.app_permit_done).toString().replaceAll(',','');
- const app_permit_create = Object.values(req.body.app_permit_create).toString().replaceAll(',','');
+  const app_permit_doing = req.body.app_permit_doing
+  const app_permit_done = req.body.app_permit_done
+  const app_permit_create = req.body.app_permit_create
  var sqlInsertApp =""
 
- try {
-  app_start_date = Object.values(req.body.app_start_date).toString().replaceAll(',','');
-} catch (e){
-  print(e)
-  app_start_date = null
-} 
 
 
-try {
-  app_end_date = Object.values(req.body.app_end_date).toString().replaceAll(',','');
-} catch (e){
-  print(e)
-  app_end_date= null
-} 
+
 
   console.log("app_acronym : " +app_acronym)
   console.log("app_rnumber : " +app_rnumber)
@@ -341,6 +305,7 @@ try {
   function(err, rows){
       if(err) throw err;
 
+     
      // var resultStr = rows."count(*)";
       console.log( "Duplicate found for "+app_acronym+" : " +rows[0].appcount);
       
@@ -356,19 +321,6 @@ try {
       //else {
 
 
-        if (app_start_date==''){
-          console.log("no start date")
-          gotstartdate=false
-         }
-      
-        if (app_end_date==''){
-         
-          console.log("no end date")
-          gotenddate=false
-      
-        } 
-        
-        if (!gotstartdate && !gotenddate){
 
 
           console.log("app_acronym : " +app_acronym)
@@ -381,118 +333,50 @@ try {
   console.log("app_permit_todolist : " +app_permit_todolist)
   console.log("app_permit_doing : " +app_permit_doing)
   console.log("app_permit_done : " +app_permit_done)
-
+ 
          console.log("Running no start date and end date")
           sqlInsertApp = "insert into nodelogin.application " +
           "( app_rnumber,"+
           " app_acronym,"+
             "app_description,"+
+            "app_start_date,"+
+            "app_end_date,"+
+
             "app_permit_open,"+
             "app_permit_todolist,"+
            "app_permit_doing,"+
+           "app_permit_create,"+
            "app_permit_done) "+
            "values "+ 
            "('"+app_rnumber+"','" 
            +app_acronym+"','"
             +app_description+"','"
+            +app_start_date+"','"
+            +app_end_date+","
             +app_permit_open+"','"
             +app_permit_todolist+"','"
             +app_permit_doing+"','"
+            +app_permit_create+"','"
             +app_permit_done+"')"
 
+            
             console.log("app_acronym "+app_acronym)
             console.log("No start and end date ")
            
-        }
+       const sqlInsertApp2 = `INSERT INTO nodelogin.application (app_acronym, app_description, App_Rnumber, App_startDate, App_endDate, App_permit_Open,App_permit_toDoList, App_permit_Doing, App_permit_Done, App_permit_create) VALUES ('${app_acronym}', '${app_description}', '${app_rnumber}','${app_start_date}', '${app_end_date}', '${app_permit_open}', '${app_permit_todolist}', '${app_permit_doing}', '${app_permit_done}', '${app_permit_create}');`
          
-      else if (!gotstartdate){
-
-        console.log("Running no start date")
-        console.log("app_acronym "+app_acronym)
-        sqlInsertApp = "insert into nodelogin.application " +
-        "( app_rnumber,"+
-        " app_acronym,"+
-          "app_description,"+
-          "app_permit_open,"+
-          "app_permit_todolist,"+
-         "app_permit_doing,"+
-         "app_permit_done,"
-         "app_end_date) "+
-         "values "+
-         "('"+app_rnumber+"','" 
-         +app_acronym+"','"
-          +app_description+"','"
-          +app_permit_open+"','"
-          +app_permit_todolist+"','"
-          +app_permit_doing+"','"
-          +app_end_date+"','"
-          +app_permit_done+"')"
-
-         
-         
-       
-        } else if (!gotenddate){
-          console.log("Running no end date")
-          console.log("app_acronym "+app_acronym)
-          
-          sqlInsertApp = "insert into nodelogin.application " +
-          "( app_rnumber,"+
-          " app_acronym,"+
-            "app_description,"+
-            "app_permit_open,"+
-            "app_permit_todolist,"+
-           "app_permit_doing,"+
-           "app_permit_done,"
-           "app_start_date) values "+
-           "('"+app_rnumber+"','" 
-         +app_acronym+"','"
-            +app_description+"','"
-            +app_permit_open+"','"
-            +app_permit_todolist+"','"
-            +app_permit_doing+"','"
-            +app_start_date+"','"
-            +app_permit_done+"')"
-        
-           
-            console.log(sqlInsertApp)
-        }  else {
-
-          console.log("All dates provided")
-          sqlInsertApp = "insert into nodelogin.application " +
-          "( app_rnumber,"+
-          " app_acronym,"+
-            "app_description,"+
-            "app_permit_open,"+
-            "app_permit_todolist,"+
-           "app_permit_doing,"+
-           "app_permit_done,"
-           "app_start_date,"
-           +"app_end_date)  values "+
-           "('"+app_rnumber+"','" +
-           
-           
-           +app_acronym+"','"
-
-            +app_description+"','"
-            +app_permit_open+"','"
-            +app_permit_todolist+"','"
-            +app_permit_doing+"','"
-            +app_permit_done+"','"
-            +app_start_date+"','"
-            +app_end_date+"')"
-       
-      }
-        
-        try {
-          console.log("Running sql "+sqlInsertApp)
-        con.query(sqlInsertApp, function (err, result) {
+      
+        // try {
+          console.log("Running sql "+sqlInsertApp2)
+        con.query(sqlInsertApp2, function (err, result) {
          if (err) throw err;
-
+            res.send(result)
          });
-        } catch (err){
-          console.log("checkExisting app - Error in inserting  nodelogin.accounts")
-          console.log(err);
-        }
+        // } catch (err){
+        //   console.log("checkExisting app - Error in inserting  nodelogin.accounts")
+        //   console.log(err);
+        //   res.send(err)
+        // }
 
     //  }
      

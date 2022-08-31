@@ -205,53 +205,91 @@ const createplan = (req, res)=>{
      //   res.send(res)
       }
 
-      const planassess = (req, res)=>{
-        console.log("Checking access for plan")
+      const planaccess = (req, res)=>{
+
+        const app_acronym = req.body.app_acronym;
         
-        var app_acronym = req.body.app_acronym.toString()
-        console.log("app_acronym "+app_acronym)
+        console.log("Check plan access for "+app_acronym)
+        
+        const sqlPermitOpen = "select app_permit_open from nodelogin.application where app_acronym ='"+app_acronym+"'"
       
-        sqlAccess= "select app_permit_todolist as access from nodelogin.application where app_acronym ='"+app_acronym+"'"
-      
-         console.log("Running query "+sqlAccess)
-      
-          con.query(sqlAccess, function (err, result) {
-              if (err) throw err;
-              
-                console.log("Plan access for"+access_type+" is : "+result[0].access)
-               
-                try {
-                groupnamesStr="'"+result[0].access.toString().replaceAll(" ","','")+"'"
-               
-             //   groupnamesStr="'"+groupnamesStr.toString().replaceAll("'',", "")
-             // split result into array
-               console.log("groupnamesStr "+groupnamesStr)
-      
-                } catch {
-                  res.send("No access")
-                }
+       // sqlAccess= "select username from nodelogin.group_assign where groupname ='PM'"
+        console.log(sqlPermitOpen)
+        con.query(sqlPermitOpen, function (err, result) {
+          if (err) throw err;
+          var app_open_result=''
+          try {
+
+            app_open_result=result[0].app_permit_open
           
-             /////////////////NAR BEI ANOTHER NESTED SQL
-            // Step 2 get groupmembers in these groups 
-             const sqlAccessMember = "select username as access from nodelogin.group_assign where groupname in ("+groupnamesStr+")"
-             console.log("Sql to check member is for access "+sqlAccessMember)
-             var userNames =""
-             con.query(sqlAccessMember, function (err, result) {
+            console.log("App open result : "+  app_open_result)
+
+            var cleaned_arr=[]
+            var str = ""+app_open_result+""
+      
+          
+
+            var app_open_arr = str.split(' ')
+
+            console.log("App open result array is : "+  app_open_arr)
+            
+            for (var i=0; i<app_open_arr.length; i++){
+              if (app_open_arr[i].length!=0){
+                cleaned_arr.push(app_open_arr[i])
+              }
+            }
+
+            console.log("App open result array is : "+  cleaned_arr)
+            console.log("App open result array length : "+  cleaned_arr.length)
+
+            var sqlGetMembers = "select username from nodelogin.group_assign where groupname in ("
+            for (var i=0; i<cleaned_arr.length; i++){
+              sqlGetMembers = sqlGetMembers +"'"+cleaned_arr[i]+"',"
+            }
+            var strlen = sqlGetMembers.length
+
+          
+            sqlGetMembers = sqlGetMembers.substring(0, strlen-2)
+            sqlGetMembers = sqlGetMembers+"')"
+
+            console.log("sql " +sqlGetMembers)
+
+            con.query(sqlGetMembers, function (err, result) {
+              
+              if (err) throw err;
+              console.log(result[0].username)
+              res.send(result)
+            
+            })
+
+
+          } catch (err){
+            console.log(err)
+          }
+            console.log("cleaned App open result array is : "+ cleaned_arr)
+            
+               
+            //  /////////////////NAR BEI ANOTHER NESTED SQL
+            // // Step 2 get groupmembers in these groups 
+            //  const sqlAccessMember = "select username as access from nodelogin.group_assign where groupname in ("+groupnamesStr+")"
+            //  console.log("Sql to check member is for access "+sqlAccessMember)
+            //  var userNames =""
+            //  con.query(sqlAccessMember, function (err, result) {
       
             
-              if (err) throw err;
+            //   if (err) throw err;
               
-                console.log("Members in groups "+groupnamesStr +" query with "+sqlAccessMember)
+            //     console.log("Members in groups "+groupnamesStr +" query with "+sqlAccessMember)
                
-                for ( var i=0; i<result.length; i++){
-                  userNames = userNames+","+result[i].access
-                  console.log("Username :"+result[i].access)
+            //     for ( var i=0; i<result.length; i++){
+            //       userNames = userNames+","+result[i].access
+            //       console.log("Username :"+result[i].access)
                             
-                }
-                console.log("Usernames found in "+groupnamesStr+ " is "+userNames)
+            //     }
+            //     console.log("Usernames found in "+groupnamesStr+ " is "+userNames)
       
-                res.send(result)
-             })
+               // res.send(result)
+           //  })
             
           }
          
@@ -291,7 +329,7 @@ const createplan = (req, res)=>{
   module.exports= 
   {
     getappplan,
-    planassess,
+    planaccess,
     createplan,
     checkplan,
     listplans,

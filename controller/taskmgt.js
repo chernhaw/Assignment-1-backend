@@ -7,7 +7,7 @@ var transporter = nodemailer.createTransport({
   auth: {
 
     user: 'chernhaw@hotmail.com',
-    pass: 'P1:1'
+    pass: 'Psalm31:1'
 
   }
 });
@@ -445,10 +445,10 @@ const createtask = (req, res)=>{
   console.log("Task creator "+taskcreator) 
   console.log("Task notes "+taskNotes)
   if (taskNotes=="undefined"){
-    taskNotes="\n\n----------\nUser:"+taskcreator+", Current State: Open, Date and Time:"+Date()+"\n"
+    taskNotes="\n\n----------\nUser:"+taskcreator+", Current State: Create, Date and Time:"+Date()+"\n"
   }  else {
    
-    taskNotes = taskNotes+"\n\n----------\nUser:"+taskcreator+", Current State: Open, Date and Time:"+Date()+"\n"
+    taskNotes = taskNotes+"\n\n----------\nUser:"+taskcreator+", Current State: Create, Date and Time:"+Date()+"\n"
   }
   
 
