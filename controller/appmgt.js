@@ -80,19 +80,10 @@ const env = require('dotenv')
 
 const checkaccess =(req, res)=>{
  
-
-  role = Object.values(req.body.role).toString().replaceAll(',','');
-
   var sql=""
-  if (role=="Lead"){
-    sql= "select username FROM nodelogin.group_role WHERE groupname= 'Lead'"
-  } else if (role=="AppLead"){
-    sql= "select username FROM nodelogin.group_role WHERE groupname= 'AppLead'"
-  }if (role=="PM"){
-    sql= "select username FROM nodelogin.group_role WHERE groupname= 'PM'"
-  }
-   
-  
+ 
+    sql= "select username FROM nodelogin.group_assign WHERE groupname= 'AppLead'"
+
   con.query(sql, function (err, result) {
     if (err) throw err;
       try {

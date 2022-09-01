@@ -207,11 +207,12 @@ const createplan = (req, res)=>{
 
       const planaccess = (req, res)=>{
 
-        const app_acronym = req.body.app_acronym;
+       // const app_acronym = req.body.app_acronym;
+        const app_acronymStr = Object.values(req.body.app_acronym).toString().replaceAll(',','');
         
-        console.log("Check plan access for "+app_acronym)
+        console.log("Check plan access for "+app_acronymStr)
         
-        const sqlPermitOpen = "select app_permit_open from nodelogin.application where app_acronym ='"+app_acronym+"'"
+        const sqlPermitOpen = "select app_permit_open from nodelogin.application where app_acronym ='"+app_acronymStr+"'"
       
        // sqlAccess= "select username from nodelogin.group_assign where groupname ='PM'"
         console.log(sqlPermitOpen)
@@ -305,7 +306,7 @@ const createplan = (req, res)=>{
           var app_acronym = req.body.app_acronym.toString()
           console.log("app_acronym "+app_acronym)
         
-          sqlAppPlan= "select plan_app_acronym  from nodelogin.plan where plan_app_acronym like '%"+app_acronym+"'"
+          sqlAppPlan= "select plan_app_acronym from nodelogin.plan where plan_app_acronym like '%"+app_acronym+"'"
         
            console.log("Running query "+sqlAppPlan)
         
