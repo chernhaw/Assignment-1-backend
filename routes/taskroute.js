@@ -12,4 +12,6 @@ taskroute.post('/listplantasks', taskmgt.getAllTasksByPlan)
 taskroute.post('/gettaskdetail', taskmgt.getTaskDetail)
 taskroute.post('/taskaccess', taskmgt.taskaccess)
 taskroute.post('/updatetask', taskmgt.updateTask)
+
+taskroute.post('/checktaskexist', taskmgt.checktaskexist)
 module.exports = taskroute;
