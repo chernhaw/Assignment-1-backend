@@ -40,13 +40,14 @@ const env = require('dotenv')
   console.log("request - query plan " + req.body);
   var app_acronym=null
   try{
-  app_acronym = Object.values(req.body.app_acronym).toString().replaceAll(',','');
-  plan_mvp_name = Object.values(req.body.plan_mvp_name).toString().replaceAll(',','');
+  app_acronym = Object.values(req.body.app_acronym).toString().replaceAll(',','').replaceAll("'","^");
+  plan_mvp_name = Object.values(req.body.plan_mvp_name).toString().replaceAll(',','').replaceAll("'","^");
   }catch (err){
     console.log("There is an error "+err)
   }
 
-  const plan_app_acronym=""+plan_mvp_name+app_acronym+""
+  const plan_app_acronym=""+plan_mvp_name+app_acronym+"".replaceAll("'","^")
+  console.log ("Checking plan "+plan_app_acronym+" exist.")
   const sql_check_plan = "select count(*) as duplicate from nodelogin.plan where plan_app_acronym='"+plan_app_acronym+"'";
 
   console.log("check plan : "+ sql_check_plan);
@@ -119,8 +120,8 @@ const updateplan = (req, res)=>{
 
 const createplan = (req, res)=>{
   console.log("request - create new app " + req.body);
-  const app_acronym = Object.values(req.body.app_acronym).toString().replaceAll(',','');
-  const plan_mvp_name = Object.values(req.body.plan_mvp_name).toString().replaceAll(',','');
+  const app_acronym = Object.values(req.body.app_acronym).toString().replaceAll(',','').replaceAll("'","^");
+  const plan_mvp_name = Object.values(req.body.plan_mvp_name).toString().replaceAll(',','').replaceAll("'","^");
  
   var plan_start_date = null
   var plan_end_date = null
@@ -151,7 +152,7 @@ const createplan = (req, res)=>{
 
   } 
  
- const plan_app_acronym=""+plan_mvp_name+app_acronym+""
+ const plan_app_acronym=""+app_acronym+""
 
   console.log("app_acronym : " +app_acronym)
  
@@ -255,6 +256,10 @@ const createplan = (req, res)=>{
 
             console.log("sql " +sqlGetMembers)
 
+            if (cleaned_arr.length<1){
+              console.log("PM group not assigned to app")
+            } else {
+
             con.query(sqlGetMembers, function (err, result) {
               
               if (err) throw err;
@@ -263,7 +268,7 @@ const createplan = (req, res)=>{
             
             })
 
-
+          }
           } catch (err){
             console.log(err)
           }
@@ -293,7 +298,7 @@ const createplan = (req, res)=>{
            //  })
             
           }
-         
+        
           );
          
         }
@@ -306,7 +311,7 @@ const createplan = (req, res)=>{
           var app_acronym = req.body.app_acronym.toString()
           console.log("app_acronym "+app_acronym)
         
-          sqlAppPlan= "select plan_app_acronym from nodelogin.plan where plan_app_acronym like '%"+app_acronym+"'"
+          sqlAppPlan= "select plan_mvp_name from nodelogin.plan where plan_app_acronym = '"+app_acronym+"'"
         
            console.log("Running query "+sqlAppPlan)
         
@@ -315,11 +320,12 @@ const createplan = (req, res)=>{
                 
                 for ( var i=0; i<result.length; i++){
                   
-                  console.log("plan_app_acronym  :"+result[i].plan_app_acronym)
+                  console.log("plan_mvp_name  :"+result[i].plan_mvp_name)
                             
                 }
-                  
+                  console.log(result.data)
                   res.send(result)
+
              
             }
            

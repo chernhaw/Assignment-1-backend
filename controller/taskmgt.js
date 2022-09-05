@@ -100,7 +100,7 @@ const retrieveplan = (req, res)=>{
 
 const getTaskDetail = (req, res)=>{
   console.log("request - get task detail  " + req.body);
-  const task_id = Object.values(req.body.task_id).toString().replaceAll(',','');
+  const task_id = Object.values(req.body.task_id).toString().replaceAll(',','').replaceAll("'","^");
   const sql_get_task_detail = "select "+
   "task_id, "+
   "task_name, "+
@@ -188,7 +188,7 @@ const getAllTasksByPlan = (req, res)=>{
 }
 
 const getAllTasksByApp = (req, res)=>{
-  const app_acronym = Object.values(req.body.app_acronym).toString().replaceAll(',','');
+  const app_acronym = Object.values(req.body.app_acronym).toString().replaceAll(',','').replaceAll("'","^");
   console.log("getting app_acronym task : "+app_acronym)
   const sqlGetAppTasks = "select task_id, task_name, task_state from nodelogin.task where task_app_acronym ='"+app_acronym+"' order by task_state"
   try {
@@ -302,21 +302,21 @@ const taskaccess = (req, res)=>{
 const updateTask = (req, res)=>{
 
   console.log("Update task ")
-  const app_acronym = Object.values(req.body.app_acronym).toString().replaceAll(',','');
+  const app_acronym = Object.values(req.body.app_acronym).toString().replaceAll(',','').replaceAll("'","^");
   console.log("task for app "+app_acronym)
-  const taskplan = Object.values(req.body.taskPlan).toString().replaceAll(',','');
-  console.log("Create task for task "+taskplan)
+  const taskplan = Object.values(req.body.taskPlan).toString().replaceAll(',','').replaceAll("'","^");;
+  console.log("set plan for task "+taskplan)
   
   const taskName = Object.values(req.body.taskName).toString().replaceAll(',','');
   console.log("Taskname "+taskName)
 
-  const taskdescription = Object.values(req.body.taskDescription).toString().replaceAll(',','');
+  const taskdescription = Object.values(req.body.taskDescription).toString().replaceAll(',','').replaceAll("'","^");;
   console.log("Task description "+taskdescription)
 
   const taskstate=Object.values(req.body.taskState).toString().replaceAll(',',''); 
   console.log("Task state "+taskstate)
   
-  const taskNotes=Object.values(req.body.taskNotes).toString().replaceAll(',',''); 
+  const taskNotes=Object.values(req.body.taskNotes).toString().replaceAll(',','').replaceAll("'","^");
   console.log("Task notes "+taskNotes)
 
   const taskOwner=Object.values(req.body.taskOwner).toString().replaceAll(',',''); 
@@ -428,11 +428,28 @@ const updateTask = (req, res)=>{
 // }
 // }
 
+const checktaskexist = (req, res)=>{
+
+  const app_acronym = Object.values(req.body.app_acronym).toString().replaceAll(',','').replaceAll("'",'^')
+  const task_name = Object.values(req.body.task_name).toString().replaceAll(',','').replaceAll("'",'^')
+
+  var checkTaskExistSql ="select count(*) as task from nodelogin.task where task_app_acronym like '%"+app_acronym+"' and task_name ='"+task_name+"'";
+
+  try {
+    console.log(checkTaskExistSql)
+  con.query(checkTaskExistSql, function (err, result) {
+    console.log("count for taskname " +result.task)
+    res.send(result)
+  });
+} catch( err){
+  console.log(err)
+}
+}
 
 const createtask = (req, res)=>{
   console.log("request - create new task " + req.body);
 
-  const app_acronym = Object.values(req.body.app_acronym).toString().replaceAll(',','');
+  const app_acronym = Object.values(req.body.app_acronym).toString().replaceAll(',','')
   console.log("Create task for app "+app_acronym)
   const taskplan = Object.values(req.body.taskPlan).toString().replaceAll(',','');
   console.log("Create task for task "+taskplan)
@@ -521,22 +538,6 @@ const createtask = (req, res)=>{
         });
      })
 
-
-    
-
-    //  var sqlTask = "select task_id from nodelogin.task where task_id ='"+new_taskid+"'"
-
-    //  con.query(sqlTask, function (err, result1) {
-    //   if (err) throw err;
-
-    //   console.log("Result "+result1)
-
-    //   res.send("Result "+result1)
-    //   });
-   
-   
-     
-
   
     
     } catch (err){
@@ -556,6 +557,7 @@ const createtask = (req, res)=>{
     getAllTasksByPlan,
     getTaskDetail,
     updateTask,
-    taskaccess
+    taskaccess,
+    checktaskexist
  
     }

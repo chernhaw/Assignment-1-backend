@@ -109,6 +109,26 @@ const checkaccess =(req, res)=>{
 
   }
 
+
+const checkexistingapp =(req, res)=>{
+
+  const app_acronym = req.body.app_acronym;
+
+
+  const sql_check_app = "select count (lower(app_acronym)) as appcount from nodelogin.application where app_acronym= lower('"+app_acronym+"')"
+
+
+  try {
+    con.query(sql_check_app, function (err, result) {
+     if (err) throw err;
+     res.send(result)
+     });
+    } catch (err){
+      console.log("checkExisting app - Error ")
+      console.log(err);
+    }
+
+}
  
 
 
@@ -132,7 +152,7 @@ const updateapp = (req, res)=>{
  
  // app_rnumber = Object.values(req.body.app_rnumber).toString().replaceAll(',','');
 
-  app_description = Object.values(req.body.app_description).toString().replaceAll(',','');
+  app_description = Object.values(req.body.app_description).toString().replaceAll(',','').replaceAll("'","^");
 
  
 try {
@@ -380,7 +400,7 @@ else if (!gotstartdate){
 
   module.exports= 
   {
-   
+    checkexistingapp,
     createapp,
     checkapp,
     listapp,
