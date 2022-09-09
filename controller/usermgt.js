@@ -168,7 +168,7 @@ const login = (req, res)=>{
       // console.log("login - email = "+email);
        bcrypt.compare(password, hash, (err, respass) => {
         
-         console.log("login - respass = "+respass + " active= "+active); //true
+        console.log("login - respass = "+respass + " active= "+active); //true
         // res.json({firstname:'John', lastname:'Doe'});
         res.json({repass:""+respass + "", active:""+active+""});
        
@@ -176,7 +176,6 @@ const login = (req, res)=>{
        });
      }
    
-
       // res.send();
    });
   }
