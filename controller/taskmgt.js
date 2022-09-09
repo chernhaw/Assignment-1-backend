@@ -7,7 +7,7 @@ var transporter = nodemailer.createTransport({
   auth: {
 
     user: 'chernhaw@hotmail.com',
-    pass: 'P'
+    pass: 'Psalm31:1'
 
   }
 });
@@ -798,19 +798,22 @@ const createtask_app = (req, res)=>{
         bcrypt.compare(password, hash, (err, respass) => {
         if (respass!=true){
           console.log("Incorrect password")
-          res.sendStatus(403)
+          res.status(403).json({"error":"Incorrect credentials"})
+        //  res.sendStatus(403)
           return
          }
 
          if (active!="Y"){
           console.log("User not active")
+          res.status(403).json({"error":"Incorrect credentials"})
           res.sendStatus(403)
           return
          }
 
          if (err) {
           console.log(err)
-          res.sendStatus(500)
+          res.status(500).json({"error":"Server error"})
+         
           return
       }
         
@@ -847,10 +850,11 @@ const createtask_app = (req, res)=>{
 
                  if (userNames.indexOf(username)==-1){
                   console.log("User not authorized")
-                  res.sendStatus(403)
+                
+                  res.status(401).json({"error":"User not authorized"})
                   return
                  }
-                 var sqlcheckTaskatDoing = "select task_state from nodelogin.task where task_name = '"+taskName+"'"
+                 var sqlcheckTaskatDoing = "select task_state, task_id from nodelogin.task where task_name = '"+taskName+"'"
                  console.log(sqlcheckTaskatDoing)
 
                  con.query(sqlcheckTaskatDoing, function (err, result) {
@@ -858,7 +862,7 @@ const createtask_app = (req, res)=>{
 
                   console.log("Task state "+result[0].task_state)
                   if (result[0].task_state!="Doing"){
-                    res.sendStatus(403)
+                    res.status(403).json({"error":"Task not at Doing"})
                     return
 
                   } else {
@@ -866,15 +870,43 @@ const createtask_app = (req, res)=>{
                     var sqlSetTaskatDoing = "update nodelogin.task set task_state='Done' where task_name = '"+taskName+"'"
                     console.log(sqlSetTaskatDoing)
                     try{
-                    con.query(sqlSetTaskatDoing, function (err, result) {
+                    con.query(sqlSetTaskatDoing, function (err, result) {// query
+
+                      var sqlGetEmail = "select a.email, a.username, b.task_name from nodelogin.accounts a inner join nodelogin.task b "+ 
+                      "on a.username = b.task_creator where b.task_name= '"+taskName+"'"
+                      
+                      console.log("Getting email "+sqlGetEmail)
+                      con.query(sqlGetEmail, function (err, result) {
+                       var taskemail=result[0].email
+                        var taskOwner=result[0].username
+                        var taskname = result[0].task_name
+                      var mailOptions = {
+                        from: 'chernhaw@hotmail.com',
+                        to:''+taskemail+'',
+                        subject: 'Task '+result[0].task_name+ ' is done',
+                        text: 'Hi Lead,\nTask '+result[0].task_name+' is completed by '+taskOwner+ ' and awaiting for your further action.\n'
+                        +'Thanks.\n\n'
+                        +'Regards,\n'
+                        +'TMS'
+                      };
+                      
+                      transporter.sendMail(mailOptions, function(error, info){
+                        console.log("Sending email: "+info)
+                        if (error) {
+                          console.log("Error sending mail "+error)
+                        } else {
+                          console.log("Email sent"+info.response)
+                        }
+                        
+                      });
 
                       if (err) throw err
-                      res.sendStatus(200)
-
-
-                    })
+                      res.status(200).json({"message":""+taskName+" set to Done "})
+                     
+                    })  })
                   } catch (err){
                     console.log(err)
+                    res.status(500).json({"message":""+taskName+" set to Done "})
                   }
                   }
 
@@ -891,7 +923,7 @@ const createtask_app = (req, res)=>{
 
         } catch(err){
           console.log(err)
-          res.sendStatus(500)
+          res.status(500).json({"error":"Server error"})
           return
         }
         }
@@ -901,6 +933,71 @@ const createtask_app = (req, res)=>{
       })
       }
 
+
+      const getTaskbyState = (req, res)=>{
+
+        const username = Object.values(req.body.username).toString().replaceAll(',','');
+        const password = Object.values(req.body.password).toString().replaceAll(',','');
+        const taskstate = Object.values(req.body.taskstate).toString().replaceAll(',','');
+        const app_acronym = Object.values(req.body.app_acronym).toString().replaceAll(',','')
+        const bcrypt = require('bcrypt'); 
+
+        const sql = "select username, password, active from "
+        + "nodelogin.accounts where username ='"+username+"'";
+        
+        console.log(sql);
+
+        con.query(sql ,
+          function(err, result){
+            if (err) throw err;
+         var active = result[0].active;
+              hash = ""+result[0].password+"";
+              console.log("login - hash = "+hash);
+              console.log("login - password = "+password);
+              console.log("User is active "+ active);
+
+        bcrypt.compare(password, hash, (err, respass) => {
+          if (respass!=true){
+            console.log("Incorrect password")
+            res.status(403).json({"error":"Incorrect credentials"})
+            //res.sendStatus(403)
+            return
+           } else 
+  
+           if (active!="Y"){
+            console.log("User not active")
+            res.status(403).json({"error":"Incorrect credentials"})
+           // res.sendStatus(403)
+            return
+           } else {
+           
+           var sqltasks= "select task_name, task_description, task_plan, task_notes, task_state, task_owner, task_createDate  from nodelogin.task where task_app_acronym ='"+app_acronym+"' and task_state='"+taskstate+"'"
+           try{
+           console.log(sqltasks)
+            con.query(sqltasks,
+              function(err, result){
+                if (err) throw err;
+                
+                
+                  res.status(200).json(result)
+                 
+                  return
+              })
+           
+          } catch(err){
+            console.log(err)
+            res.status(500).json({"error":"Server error"})
+           // res.sendStatus(500)
+          }
+        }
+        })
+      })
+      }
+
+
+          
+          
+      
       const createtask = (req, res)=>{
         console.log("request - create new task ext " + req.body);
       
@@ -955,13 +1052,15 @@ const createtask_app = (req, res)=>{
               
                if (respass!=true){
                 console.log("Incorrect password")
-                res.sendStatus(403)
+               // res.sendStatus(403)
+                res.status(401).json({"message":"Incorrect credentials"})
                 return
                }
 
                if (active!="Y"){
-                console.log("User not active")
-                res.sendStatus(403)
+              //  console.log("User not active")
+                res.status(401).json({"message":"Incorrect credentials"})
+             //   res.sendStatus(403)
                 return
                }
 
@@ -1000,7 +1099,8 @@ const createtask_app = (req, res)=>{
 
                      if (userNames.indexOf(username)==-1){
                       console.log("User not authorized")
-                      res.sendStatus(403)
+                      res.status(403).json({"error":"User not authorized"})
+                      //res.sendStatus(403)
                       return
                      }
                   })
@@ -1067,12 +1167,15 @@ const createtask_app = (req, res)=>{
                     try { 
                       if (err) throw err;
                     //  res.send(result)
-                      res.sendStatus(200)
+                 //   res.status(200).json({"message":"Task Id "+new_taskid+" created"})
+                    res.status(200).json({"taskid":new_taskid})
+
+                 //   res.sendStatus(200)
                       return
 
                     } catch(err){
                       console.log(err)
-                      res.sendStatus(500)
+                      res.sendStatus(500).json({"error":"Server error"}) 
                       return
                     }
                  
@@ -1086,7 +1189,7 @@ const createtask_app = (req, res)=>{
                   } catch (err){
                   console.log("creating task - Error ")
                   console.log(err);
-                  res.sendStatus(500)
+                  res.sendStatus(500).json({"error":"Server error"})
                   return
                 }
                 
@@ -1127,6 +1230,7 @@ const createtask_app = (req, res)=>{
     updateTask_App,
     taskaccess,
     checktaskexist,
-    promoteTask2Done
+    promoteTask2Done,
+    getTaskbyState
  
     }
