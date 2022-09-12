@@ -1074,6 +1074,8 @@ const createtask_app = (req, res)=>{
                 return
                }
 
+
+
               // 1. check group access
 
               var sqlAccess= "select app_permit_create as access from nodelogin.application where app_acronym ='"+app_acronym+"'"
@@ -1115,6 +1117,20 @@ const createtask_app = (req, res)=>{
                       return
                      }  else {
                       try {
+
+                        var sqlcheckduplicate = "select count(*) as exist from nodelogin.task where task_name = '"+taskName+"'"
+
+                        con.query(sqlcheckduplicate, function (err, result) {
+
+                          var exist = parseInt(result[0].exist)
+
+                          if (exist!=0){
+                            console.log("Taskname already exist")
+                            res.status(403).json({"error":"Taskname already existd"})
+                            return
+                          } 
+
+
                  
                         if (taskNotes=="undefined"){
                           taskNotes="\n\n----------\nUser:"+taskcreator+", Current State: Create, Date and Time:"+Date()+"\n"
@@ -1180,12 +1196,13 @@ const createtask_app = (req, res)=>{
                             res.status(500).json({"error":"Server error"}) 
                             return
                           }
-                       
+                        
                            
                             });
-                          
+                        
                          })
-                    
+                        })
+                      
                       
                         
                         } catch (err){
@@ -1195,7 +1212,7 @@ const createtask_app = (req, res)=>{
                         return
                       }
                       
-      
+                    
                      
                      }
                   })
@@ -1204,31 +1221,18 @@ const createtask_app = (req, res)=>{
      
      
                 
-              
-///
-                
-              
                
 
-              })
-               
+                })
+            
             //    res.send()
               });
-            }
+              
+              }
           
             // res.send();
          });
         
-        
-      
-        
-      
-      
-      
-        // get current count of task for app
-      
-       
-
           
             }
       
