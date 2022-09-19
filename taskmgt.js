@@ -777,6 +777,9 @@ const createtask_app = (req, res)=>{
         const app_acronym = Object.values(req.body.app_acronym).toString().replaceAll(',','')
         const taskName = Object.values(req.body.taskName).toString().replaceAll(',','');
 
+
+
+
         const bcrypt = require('bcrypt'); 
 
         const sql = "select username, password, active from "
@@ -798,31 +801,38 @@ const createtask_app = (req, res)=>{
 
         } catch (err){
           console.log("Invalid user")
-          res.status(403).json({"error":"Incorrect credentials"})
+          res.status(401).json({"code":"401"})
           return
         }
 
         bcrypt.compare(password, hash, (err, respass) => {
         if (respass!=true){
           console.log("Incorrect password")
-          res.status(403).json({"error":"Incorrect credentials"})
+          res.status(401).json({"code":"401"})
         //  res.sendStatus(403)
           return
          }
 
          if (active!="Y"){
           console.log("User not active")
-          res.status(403).json({"error":"Incorrect credentials"})
-          res.sendStatus(403)
+          res.status(401).json({"code":"401"})
+          
           return
          }
 
+         if (taskName.length>100){
+          console.log(err)
+          res.status(403).json({"code":"403"})
+          return
+        }
+
          if (err) {
           console.log(err)
-          res.status(500).json({"error":"Server error"})
+          res.status(500).json({"code":"500"})
          
           return
-      }
+        }
+        
         
         
        
@@ -858,7 +868,7 @@ const createtask_app = (req, res)=>{
                  if (userNames.indexOf(username)==-1){
                   console.log("User not authorized")
                 
-                  res.status(401).json({"error":"User not authorized"})
+                  res.status(403).json({"code":"403"})
                   return
                  }
                  var sqlcheckTaskatDoing = "select task_state, task_id from nodelogin.task where task_name = '"+taskName+"'"
@@ -866,14 +876,17 @@ const createtask_app = (req, res)=>{
 
                  con.query(sqlcheckTaskatDoing, function (err, result) {
                  
-
+                  try{
                   console.log("Task state "+result[0].task_state)
+                  } catch (err){
+                    console.log(err)
+                    res.status(404).json({"code":"404"})
+                    return
+                  }
                   if (result[0].task_state!="Doing"){
-                    res.status(403).json({"error":"Task not at Doing"})
+                    res.status(405).json({"code":"405"})
                     return
-                  } else if (result[0].task_state=="undefined"){
-                    res.status(403).json({"error":"Task not found"})
-                    return
+                  
                   
                   } else {
 
@@ -911,12 +924,12 @@ const createtask_app = (req, res)=>{
                       });
 
                       if (err) throw err
-                      res.status(200).json({"message":""+taskName+" set to Done"})
+                      res.status(200).json({"code":"200"})
                      
                     })  })
                   } catch (err){
                     console.log(err)
-                    res.status(500).json({"message":""+taskName+" set to Done "})
+                    res.status(500).json({"code":"500"})
                   }
                   }
 
@@ -952,6 +965,14 @@ const createtask_app = (req, res)=>{
         const app_acronym = Object.values(req.body.app_acronym).toString().replaceAll(',','')
         const bcrypt = require('bcrypt'); 
 
+        const correctStr = "OpenTodoDoingDoneClose"
+        
+        if (correctStr.indexOf(taskstate)==-1){
+          console.log("Invalid task state "+ taskstate)
+          res.status(400).json({"code":"400"})
+          return
+        }
+
         const sql = "select username, password, active from "
         + "nodelogin.accounts where username ='"+username+"'";
         
@@ -969,34 +990,45 @@ const createtask_app = (req, res)=>{
         bcrypt.compare(password, hash, (err, respass) => {
           if (respass!=true){
             console.log("Incorrect password")
-            res.status(403).json({"error":"Incorrect credentials"})
+            res.status(401).json({"code":"401"})
             //res.sendStatus(403)
             return
            } else 
   
            if (active!="Y"){
             console.log("User not active")
-            res.status(403).json({"error":"Incorrect credentials"})
+            res.status(401).json({"code":"401"})
            // res.sendStatus(403)
             return
            } else {
            
-           var sqltasks= "select task_name, task_description, task_plan, task_notes, task_state, task_owner, task_createDate  from nodelogin.task where task_app_acronym ='"+app_acronym+"' and task_state='"+taskstate+"'"
+           var sqltasks= "select task_id, task_name, task_description, task_plan, task_notes, task_state, task_owner, task_createDate  from nodelogin.task where task_app_acronym ='"+app_acronym+"' and task_state='"+taskstate+"'"
            try{
            console.log(sqltasks)
             con.query(sqltasks,
               function(err, result){
                 if (err) throw err;
                 
+                  try {
+                    console.log("Task name "+ result[0].taskName)
+                    
+                  } catch(err){
+
+                  
+                  res.status(404).json({"code":"404"})
+                  return
+                  }
                 
+                  result.push({"code":"200"})
                   res.status(200).json(result)
                  
+
                   return
               })
            
           } catch(err){
             console.log(err)
-            res.status(500).json({"error":"Server error"})
+            res.status(500).json({"code":"500"})
            // res.sendStatus(500)
           }
         }
@@ -1018,13 +1050,28 @@ const createtask_app = (req, res)=>{
         console.log("Create task for app "+app_acronym)
       //  const taskplan = Object.values(req.body.taskPlan).toString().replaceAll(',','');
      //   console.log("Create task for task "+taskplan)
-        const taskdescription = Object.values(req.body.taskDescription).toString().replaceAll(',','');
-        console.log("Task description "+taskdescription)
+        var taskdescription = ""
+        
+        try {
+          taskdescription= Object.values(req.body.taskDescription).toString().replaceAll(',','');
+          console.log("Task description "+taskdescription)
+        } catch(err){
+          console.log("Error in reading task description - set task description to empty")
+
+        }
+
+      
         const taskName = Object.values(req.body.taskName).toString().replaceAll(',','');
         console.log("Taskname "+taskName)
-        var taskNotes=Object.values(req.body.taskNotes).toString().replaceAll(',','');
-        const taskcreator=Object.values(req.body.taskCreator).toString().replaceAll(',',''); 
-        console.log("Task creator "+taskcreator) 
+        var taskNotes="";
+        try {
+          taskNotes= Object.values(req.body.taskDescription).toString().replaceAll(',','');
+          console.log("taskNotes "+taskNotes)
+        } catch(err){
+          console.log("Error in reading taskNotes - set taskNotes to empty")
+
+        }
+
         console.log("Task notes "+taskNotes)
 
         const bcrypt = require('bcrypt'); 
@@ -1063,18 +1110,23 @@ const createtask_app = (req, res)=>{
                if (respass!=true){
                 console.log("Incorrect password")
                // res.sendStatus(403)
-                res.status(401).json({"message":"Incorrect credentials"})
+                res.status(401).json({"code":"401"})
                 return
                }
 
                if (active!="Y"){
               //  console.log("User not active")
-                res.status(401).json({"message":"Incorrect credentials"})
+                res.status(401).json({"code":"401"})
              //   res.sendStatus(403)
                 return
                }
 
 
+               if ( taskName.length>100){
+                  res.status(401).json({"code":"400"})
+               //   res.sendStatus(403)
+                  return
+                 }
 
               // 1. check group access
 
@@ -1112,7 +1164,7 @@ const createtask_app = (req, res)=>{
 
                      if (userNames.indexOf(username+",")==-1){
                       console.log("User not authorized")
-                      res.status(403).json({"error":"User not authorized"})
+                      res.status(403).json({"code":"403"})
                      
                       return
                      }  else {
@@ -1126,17 +1178,17 @@ const createtask_app = (req, res)=>{
 
                           if (exist!=0){
                             console.log("Taskname already exist")
-                            res.status(403).json({"error":"Taskname already existd"})
+                            res.status(405).json({"code":"405"})
                             return
                           } 
 
 
                  
                         if (taskNotes=="undefined"){
-                          taskNotes="\n\n----------\nUser:"+taskcreator+", Current State: Create, Date and Time:"+Date()+"\n"
+                          taskNotes="\n\n----------\nUser:"+username+", Current State: Create, Date and Time:"+Date()+"\n"
                         }  else {
                          
-                          taskNotes = taskNotes+"\n\n----------\nUser:"+taskcreator+", Current State: Create, Date and Time:"+Date()+"\n"
+                          taskNotes = taskNotes+"\n\n----------\nUser:"+username+", Current State: Create, Date and Time:"+Date()+"\n"
                         }
         
                         var rnum=0
@@ -1154,18 +1206,16 @@ const createtask_app = (req, res)=>{
                        
                            new_taskid = app_acronym+"_"+new_taskid
                     
-                          
-                           
                          var sqlInsertTask = "insert into nodelogin.task "+
                          "(task_name, task_description, task_id, task_notes, task_app_acronym, task_state, task_creator, task_owner, task_createDate )"+
                          " values ('"+taskName+
                          "','"+taskdescription
                          +"','"+new_taskid
-                         
+    
                          + "','"+taskNotes +"/n "
                          +"','"+app_acronym+
                          "','Open', '"
-                         +taskcreator
+                         +""+username
                          +"',null,"
                          +"CURRENT_TIMESTAMP)"
                          console.log("Creating new task sql "+sqlInsertTask)
@@ -1186,14 +1236,14 @@ const createtask_app = (req, res)=>{
                             if (err) throw err;
                           //  res.send(result)
                        //   res.status(200).json({"message":"Task Id "+new_taskid+" created"})
-                          res.status(200).json({"taskid":new_taskid})
+                          res.status(200).json({"taskid":new_taskid, "code":"200"})
       
                        //   res.sendStatus(200)
                             return
       
                           } catch(err){
                             console.log(err)
-                            res.status(500).json({"error":"Server error"}) 
+                            res.status(500).json({"code":"500"}) 
                             return
                           }
                         
@@ -1208,7 +1258,7 @@ const createtask_app = (req, res)=>{
                         } catch (err){
                         console.log("creating task - Error ")
                         console.log(err);
-                        res.sendStatus(500).json({"error":"Server error"})
+                        res.sendStatus(500).json({"code":"500"})
                         return
                       }
                       
