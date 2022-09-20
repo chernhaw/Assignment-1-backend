@@ -7,7 +7,7 @@ var transporter = nodemailer.createTransport({
   auth: {
 
     user: 'chernhaw@hotmail.com',
-    pass: 'Ps564751'
+    pass: 'Psalm31:1'
 
   }
 });
@@ -18,16 +18,17 @@ const env = require('dotenv')
 
  var con = mysql.createConnection({
  // host:process.env.HOST,
+ host:"host.docker.internal",
  //user:process.env.USER,
-  user:"root",
+   user:"root",
   password:"password",
  //password:process.env.PASSWORD,
 
   database:"nodelogin"
-// database:process.env.DATABASE
+ // database:process.env.DATABASE
  } );
 
-
+console.log("local host "+process.env.HOST)
  const listplans = (req, res)=>{
     console.log("request - query app " + req.body);
    
@@ -777,9 +778,6 @@ const createtask_app = (req, res)=>{
         const app_acronym = Object.values(req.body.app_acronym).toString().replaceAll(',','')
         const taskName = Object.values(req.body.taskName).toString().replaceAll(',','');
 
-
-
-
         const bcrypt = require('bcrypt'); 
 
         const sql = "select username, password, active from "
@@ -820,19 +818,12 @@ const createtask_app = (req, res)=>{
           return
          }
 
-         if (taskName.length>100){
-          console.log(err)
-          res.status(403).json({"code":"403"})
-          return
-        }
-
          if (err) {
           console.log(err)
           res.status(500).json({"code":"500"})
          
           return
-        }
-        
+      }
         
         
        
@@ -1009,20 +1000,9 @@ const createtask_app = (req, res)=>{
               function(err, result){
                 if (err) throw err;
                 
-                  try {
-                    console.log("Task name "+ result[0].taskName)
-                    
-                  } catch(err){
-
-                  
-                  res.status(404).json({"code":"404"})
-                  return
-                  }
-                
                   result.push({"code":"200"})
                   res.status(200).json(result)
                  
-
                   return
               })
            
@@ -1050,28 +1030,13 @@ const createtask_app = (req, res)=>{
         console.log("Create task for app "+app_acronym)
       //  const taskplan = Object.values(req.body.taskPlan).toString().replaceAll(',','');
      //   console.log("Create task for task "+taskplan)
-        var taskdescription = ""
-        
-        try {
-          taskdescription= Object.values(req.body.taskDescription).toString().replaceAll(',','');
-          console.log("Task description "+taskdescription)
-        } catch(err){
-          console.log("Error in reading task description - set task description to empty")
-
-        }
-
-      
+        const taskdescription = Object.values(req.body.taskDescription).toString().replaceAll(',','');
+        console.log("Task description "+taskdescription)
         const taskName = Object.values(req.body.taskName).toString().replaceAll(',','');
         console.log("Taskname "+taskName)
-        var taskNotes="";
-        try {
-          taskNotes= Object.values(req.body.taskDescription).toString().replaceAll(',','');
-          console.log("taskNotes "+taskNotes)
-        } catch(err){
-          console.log("Error in reading taskNotes - set taskNotes to empty")
-
-        }
-
+        var taskNotes=Object.values(req.body.taskNotes).toString().replaceAll(',','');
+        // const taskcreator=Object.values(req.body.taskCreator).toString().replaceAll(',',''); 
+        // console.log("Task creator "+taskcreator) 
         console.log("Task notes "+taskNotes)
 
         const bcrypt = require('bcrypt'); 
@@ -1122,11 +1087,6 @@ const createtask_app = (req, res)=>{
                }
 
 
-               if ( taskName.length>100){
-                  res.status(401).json({"code":"400"})
-               //   res.sendStatus(403)
-                  return
-                 }
 
               // 1. check group access
 
