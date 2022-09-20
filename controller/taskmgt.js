@@ -2,31 +2,35 @@ var mysql = require('mysql');
 
 var nodemailer = require('nodemailer')
 
-var transporter = nodemailer.createTransport({
-  service: 'hotmail',
-  auth: {
 
-    user: 'chernhaw@hotmail.com',
-    pass: 'Psalm31:1'
-
-  }
-});
-const env = require('dotenv')
- env.config({path:'./config.env'})
+const env = require('dotenv');
+const { networkInterfaces } = require('nodemailer/lib/shared');
+env.config({path:'./config.env'})
 
 
 
  var con = mysql.createConnection({
- // host:process.env.HOST,
- //user:process.env.USER,
-  user:"root",
-  password:"password",
- //password:process.env.PASSWORD,
+  host:process.env.HOST,
+// host:"host.docker.internal",
+ user:process.env.USER,
+ //  user:"root",
+ // password:"password",
+ password:process.env.PASSWORD,
 
-  database:"nodelogin"
-// database:process.env.DATABASE
+ // database:"nodelogin"
+  database:process.env.DATABASE
  } );
+ console.log("host : " +process.env.HOST)
 
+ var transporter = nodemailer.createTransport({
+  service: 'hotmail',
+  auth: {
+
+    user: process.env.USER,
+    pass: process.env.EMAIL
+
+  }
+});
 
  const listplans = (req, res)=>{
     console.log("request - query app " + req.body);
@@ -870,7 +874,7 @@ const createtask_app = (req, res)=>{
                   console.log("Task state "+result[0].task_state)
                   } catch (err){
                     console.log(err)
-                    res.status(404).json({"error":"Task not found"})
+                    res.status(404).json({"code":"404"})
                     return
                   }
                   if (result[0].task_state!="Doing"){
@@ -1016,7 +1020,13 @@ const createtask_app = (req, res)=>{
       }
 
 
-          
+      setInterval(function () {
+        var sql = 'SELECT now() as time'
+        con.query(sql ,
+          function(err, rows){
+            console.log("Running query to keep connection alive " +rows[0].time)
+          })
+    }, 300000);
           
       
       const createtask = (req, res)=>{
@@ -1033,7 +1043,13 @@ const createtask_app = (req, res)=>{
         console.log("Task description "+taskdescription)
         const taskName = Object.values(req.body.taskName).toString().replaceAll(',','');
         console.log("Taskname "+taskName)
-        var taskNotes=Object.values(req.body.taskNotes).toString().replaceAll(',','');
+        var taskNotes=''
+        try{
+          taskNotes=Object.values(req.body.taskNotes).toString().replaceAll(',','');
+        } catch(err){
+          console.log("Error reading tasknotes - will set to empty")
+          console.log(err)
+        }
         // const taskcreator=Object.values(req.body.taskCreator).toString().replaceAll(',',''); 
         // console.log("Task creator "+taskcreator) 
         console.log("Task notes "+taskNotes)
