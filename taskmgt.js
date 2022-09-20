@@ -7,7 +7,7 @@ var transporter = nodemailer.createTransport({
   auth: {
 
     user: 'chernhaw@hotmail.com',
-    pass: 'Psalm31:1'
+    pass: 'Ps564751'
 
   }
 });
